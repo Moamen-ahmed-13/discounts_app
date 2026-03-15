@@ -1,5 +1,3 @@
-// lib/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../models/coupon.dart';
@@ -9,7 +7,6 @@ import '../widgets/store_item.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -19,17 +16,16 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedCategory = 'الكل';
   final TextEditingController _searchController = TextEditingController();
 
-  List<Coupon> get filteredCoupons {
-    return mockCoupons.where((c) {
-      final matchSearch = _searchQuery.isEmpty ||
-          c.title.contains(_searchQuery) ||
-          c.storeName.contains(_searchQuery) ||
-          c.code.contains(_searchQuery);
-      final matchCategory =
-          _selectedCategory == 'الكل' || c.category == _selectedCategory;
-      return matchSearch && matchCategory;
-    }).toList();
-  }
+  List<Coupon> get filteredCoupons => mockCoupons.where((c) {
+    final matchSearch =
+        _searchQuery.isEmpty ||
+        c.title.contains(_searchQuery) ||
+        c.storeName.contains(_searchQuery) ||
+        c.code.contains(_searchQuery);
+    final matchCategory =
+        _selectedCategory == 'الكل' || c.category == _selectedCategory;
+    return matchSearch && matchCategory;
+  }).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -37,43 +33,25 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppTheme.background,
       body: CustomScrollView(
         slivers: [
-          // AppBar
           SliverAppBar(
             floating: true,
             pinned: true,
-            backgroundColor: const Color(0xFF111111),
+            backgroundColor: AppTheme.background,
             elevation: 0,
-            title: Row(
-              children: [
-                Image.network(
-                  'https://super-beignet-aad14f.netlify.app/assets/img/logo.png',
-                  height: 32,
-                  errorBuilder: (_, __, ___) => Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.local_offer, color: Colors.black, size: 18),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'CouponX',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
+            title: Image.asset(
+              'assets/images/logo.png',
+              height: 36,
+              errorBuilder: (_, __, ___) => const Text(
+                'CouponX',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppTheme.primary,
                 ),
-              ],
+              ),
             ),
+            centerTitle: true,
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(1),
               child: Container(height: 1, color: AppTheme.divider),
@@ -84,31 +62,38 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top banner
-                _buildTopBanner(),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  color: const Color(0xFF111111),
+                  child: const Text(
+                    'لا تفوت أفضل العروض اليومية!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppTheme.textSecondaryinBlack,
+                      fontSize: 12,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                ),
 
-                // Hero Section
                 _buildHeroSection(),
 
-                // Search Bar
                 _buildSearchBar(),
 
-                // Stores Section
-                _buildSectionHeader('🏪 أشهر المتاجر',
-                    'تضم مجموعة واسعة من المتاجر التي نقدم لها كوبونات خصم حصرية'),
+                _buildSectionHeader(
+                  '🏪  أشهر المتاجر',
+                  'تضم مجموعة واسعة من المتاجر التي نقدم لها كوبونات خصم حصرية',
+                ),
                 _buildStoresList(),
 
-                // Categories
                 _buildCategories(),
-
-                // Coupons Section
-                _buildSectionHeader('🏷️ كوبونات مميزة',
-                    'أحدث العروض والكوبونات الحصرية التي تمت إضافتها حديثًا إلى منصتنا'),
-
-                // Coupons List
+                _buildSectionHeader(
+                  '🏷️  كوبونات مميزة',
+                  'أحدث العروض والكوبونات الحصرية التي تمت إضافتها حديثًا إلى منصتنا',
+                ),
                 _buildCouponsList(),
 
-                // Footer
                 _buildFooter(),
               ],
             ),
@@ -118,150 +103,127 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTopBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      color: const Color(0xFF111111),
-      child: const Text(
-        'لا تفوت أفضل العروض اليومية!',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: AppTheme.textSecondary,
-          fontSize: 12,
-          fontFamily: 'Cairo',
-        ),
-      ),
-    );
-  }
-
   Widget _buildHeroSection() {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Sale badge image area
-          Center(
-            child: Container(
-              height: 120,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+      margin: const EdgeInsets.all(0),
+      // decoration: BoxDecoration(
+      //   borderRadius: BorderRadius.circular(0),
+      //   border: Border.all(color: AppTheme.cardBorder),
+      // ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(0),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/back.png',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    Container(color: AppTheme.surface),
               ),
-              child: Stack(
-                alignment: Alignment.center,
+            ),
+            Positioned.fill(
+              child: Container(color: Colors.black.withOpacity(0.55)),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Row(
                 children: [
-                  // SALE badge
-                  Positioned(
-                    left: 20,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.secondary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'SALE',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 22,
-                          letterSpacing: 2,
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'وفر أكثر مع عالم الخصومات!',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Cairo',
+                            height: 1.5,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          'استمتع بخصومات تصل إلى ٪70 على مجموعة واسعة من المنتجات من متاجرك المفضلة. اكتشف العروض الحصرية اليومية وكوبونات الخصم التي تجعل التسوق أكثر متعة وتوفيرًا.',
+                          style: TextStyle(
+                            color: AppTheme.textSecondaryinBlack,
+                            fontSize: 11,
+                            fontFamily: 'Cairo',
+                            height: 1.5,
+                          ),
+                        ),
+                        // const SizedBox(height: 16),
+                        // Container(
+                        //   padding: const EdgeInsets.symmetric(
+                        //     horizontal: 16,
+                        //     vertical: 10,
+                        //   ),
+                        //   decoration: BoxDecoration(
+                        //     color: AppTheme.secondary,
+                        //     borderRadius: BorderRadius.circular(10),
+                        //   ),
+                        //   child: const Row(
+                        //     mainAxisSize: MainAxisSize.min,
+                        //     children: [
+                        //       Icon(Icons.search, color: Colors.white, size: 16),
+                        //       SizedBox(width: 6),
+                        //       Text(
+                        //         'بحث',
+                        //         style: TextStyle(
+                        //           color: Colors.white,
+                        //           fontFamily: 'Cairo',
+                        //           fontWeight: FontWeight.bold,
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                      ],
                     ),
                   ),
-                  // OFF badge
-                  Positioned(
-                    right: 20,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.cardBorder),
-                      ),
-                      child: const Text(
-                        'OFF',
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 22,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // 10% circle
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 3),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '10%',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                        ),
-                      ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: Image.asset(
+                      'assets/images/hero.png',
+                      errorBuilder: (_, __, ___) => const SizedBox(),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'وفر أكثر مع عالم الخصومات!',
-            style: TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Cairo',
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'استمتع بخصومات تصل إلى ٪70 على مجموعة واسعة من المنتجات من متاجرك المفضلة. اكتشف العروض الحصرية اليومية وكوبونات الخصم التي تجعل التسوق أكثر متعة وتوفيرًا.',
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 13,
-              fontFamily: 'Cairo',
-              height: 1.6,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.only(top: 16, right: 8, left: 8, bottom: 30),
       child: TextField(
+        cursorColor: AppTheme.primary,
         controller: _searchController,
         textDirection: TextDirection.rtl,
-        style: const TextStyle(color: AppTheme.textPrimary, fontFamily: 'Cairo'),
+        style: const TextStyle(
+          color: AppTheme.textPrimary,
+          fontFamily: 'Cairo',
+        ),
         decoration: InputDecoration(
           hintText: 'ابحث عن كوبونات أو متاجر...',
-          hintStyle: const TextStyle(fontFamily: 'Cairo', color: AppTheme.textSecondary, fontSize: 13),
+          hintStyle: const TextStyle(
+            fontFamily: 'Cairo',
+            color: AppTheme.textSecondaryinWhite,
+            fontSize: 13,
+          ),
           prefixIcon: Container(
             margin: const EdgeInsets.all(8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: AppTheme.secondary,
+              color: AppTheme.primary,
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Text(
@@ -276,7 +238,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: AppTheme.textSecondary),
+                  icon: const Icon(
+                    Icons.clear,
+                    color: AppTheme.textSecondaryinWhite,
+                  ),
                   onPressed: () {
                     _searchController.clear();
                     setState(() => _searchQuery = '');
@@ -284,20 +249,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
               : null,
           filled: true,
-          fillColor: AppTheme.surface,
+          fillColor: AppTheme.background,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppTheme.cardBorder),
+            borderSide: const BorderSide(color: AppTheme.textSecondaryinBlack),
           ),
+
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: AppTheme.primary, width: 1.5),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
         onChanged: (v) => setState(() => _searchQuery = v),
       ),
@@ -306,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSectionHeader(String title, String subtitle) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 6),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -326,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: const TextStyle(
                 fontSize: 12,
                 fontFamily: 'Cairo',
-                color: AppTheme.textSecondary,
+                color: Color.fromARGB(255, 121, 121, 121),
               ),
             ),
           ],
@@ -349,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildCategories() {
     return Padding(
-      padding: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.only(top: 40, bottom: 8),
       child: SizedBox(
         height: 44,
         child: ListView.builder(
@@ -363,18 +332,26 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () => setState(() => _selectedCategory = cat),
               child: Container(
                 margin: const EdgeInsets.only(left: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: selected ? AppTheme.primary : AppTheme.surface,
+                  color: selected ? AppTheme.primary : AppTheme.background,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: selected ? AppTheme.primary : AppTheme.cardBorder,
+                    width: 2,
+                    color: selected
+                        ? AppTheme.primary
+                        : const Color.fromARGB(255, 192, 191, 191),
                   ),
                 ),
                 child: Text(
                   cat,
                   style: TextStyle(
-                    color: selected ? Colors.black : AppTheme.textSecondary,
+                    color: selected
+                        ? Colors.white
+                        : AppTheme.textSecondaryinWhite,
                     fontSize: 12,
                     fontFamily: 'Cairo',
                     fontWeight: selected ? FontWeight.bold : FontWeight.normal,
@@ -395,13 +372,17 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: EdgeInsets.all(40),
           child: Column(
             children: [
-              Icon(Icons.search_off, size: 60, color: AppTheme.textSecondary),
+              Icon(
+                Icons.search_off,
+                size: 60,
+                color: AppTheme.textSecondaryinWhite,
+              ),
               SizedBox(height: 12),
               Text(
                 'لا توجد نتائج',
                 style: TextStyle(
                   fontFamily: 'Cairo',
-                  color: AppTheme.textSecondary,
+                  color: AppTheme.textSecondaryinWhite,
                   fontSize: 16,
                 ),
               ),
@@ -410,11 +391,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: filteredCoupons.map((c) => CouponCard(coupon: c)).toList(),
+    return Container(
+      // color: Colors.yellowAccent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          children: filteredCoupons.map((c) => CouponCard(coupon: c)).toList(),
+        ),
       ),
     );
   }
@@ -426,35 +409,24 @@ class _HomeScreenState extends State<HomeScreen> {
       color: const Color(0xFF111111),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(Icons.local_offer, color: Colors.black, size: 16),
+          Image.asset(
+            'assets/images/logo2.png',
+            height: 40,
+            errorBuilder: (_, __, ___) => const Text(
+              'CouponX',
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                fontFamily: 'Cairo',
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'CouponX',
-                style: TextStyle(
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  fontFamily: 'Cairo',
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
             'منصتك لأفضل كوبونات الخصم والعروض الحصرية.',
             style: TextStyle(
-              color: AppTheme.textSecondary,
+              color: AppTheme.textSecondaryinBlack,
               fontSize: 12,
               fontFamily: 'Cairo',
             ),
@@ -475,7 +447,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Text(
             '2025 عالم الخصومات. جميع الحقوق محفوظة.',
             style: TextStyle(
-              color: AppTheme.textSecondary,
+              color: AppTheme.textSecondaryinBlack,
               fontSize: 11,
               fontFamily: 'Cairo',
             ),
@@ -496,7 +468,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppTheme.cardBorder),
       ),
-      child: Icon(icon, color: AppTheme.textSecondary, size: 18),
+      child: Icon(icon, color: AppTheme.textSecondaryinBlack, size: 18),
     );
   }
 }

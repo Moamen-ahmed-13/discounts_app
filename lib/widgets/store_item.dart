@@ -1,14 +1,81 @@
-// lib/widgets/store_item.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../models/coupon.dart';
 import '../theme.dart';
 
 class StoreItem extends StatelessWidget {
   final Store store;
   final VoidCallback? onTap;
-
   const StoreItem({super.key, required this.store, this.onTap});
+
+  bool get _isLocal => !store.logoUrl.startsWith('http');
+
+  Widget _buildLogo() {
+    if (_isLocal) {
+      if (store.logoUrl.endsWith('.svg')) {
+        // return Center(
+        //   child: Text(
+        //     store.name,
+        //     style: const TextStyle(
+        //       fontSize: 9,
+        //       fontFamily: 'Cairo',
+        //       color: Colors.black,
+        //       fontWeight: FontWeight.bold,
+        //     ),
+        //     textAlign: TextAlign.center,
+        //   ),
+        // );
+        return SvgPicture.asset(
+          store.logoUrl,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => Center(
+            child: Text(
+              store.name,
+              style: const TextStyle(
+                fontSize: 9,
+                fontFamily: 'Cairo',
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      }
+      return Image.asset(
+        store.logoUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Center(
+          child: Text(
+            store.name,
+            style: const TextStyle(
+              fontSize: 9,
+              fontFamily: 'Cairo',
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    return Image.network(
+      store.logoUrl,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => Center(
+        child: Text(
+          store.name,
+          style: const TextStyle(
+            fontSize: 9,
+            fontFamily: 'Cairo',
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +86,9 @@ class StoreItem extends StatelessWidget {
         margin: const EdgeInsets.only(left: 10),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          color: AppTheme.background,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.cardBorder),
+          // border: Border.all(color: AppTheme.cardBorder),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -34,22 +101,7 @@ class StoreItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
               ),
               padding: const EdgeInsets.all(4),
-              child: Image.network(
-                store.logoUrl,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Center(
-                  child: Text(
-                    store.name,
-                    style: const TextStyle(
-                      fontSize: 8,
-                      fontFamily: 'Cairo',
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
+              child: _buildLogo(),
             ),
             const SizedBox(height: 6),
             Text(
