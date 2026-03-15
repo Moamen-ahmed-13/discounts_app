@@ -1,266 +1,246 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/coupon.dart';
 import '../theme.dart';
 
-class CouponCard extends StatelessWidget {
+class CouponCard extends StatefulWidget {
   final Coupon coupon;
   const CouponCard({super.key, required this.coupon});
 
-  Color get badgeColor =>
-      AppTheme.badgeColors[coupon.badge] ?? AppTheme.primary;
-  Color get badgeTextColor =>
-      AppTheme.badgeTextColors[coupon.badge] ?? Colors.black;
+  @override
+  State<CouponCard> createState() => _CouponCardState();
+}
 
-  bool get _isLocalAsset => !coupon.storeLogo.startsWith('http');
+class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateMixin {
+  bool _revealed = false;
+  late AnimationController _controller;
+  late Animation<double> _blurAnim;
 
-  void _copyCode(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: coupon.code));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
+    _blurAnim = Tween<double>(begin: 8.0, end: 0.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Color get badgeColor => AppTheme.badgeColors[widget.coupon.badge] ?? AppTheme.primary;
+  Color get badgeTextColor => AppTheme.badgeTextColors[widget.coupon.badge] ?? Colors.black;
+  bool get _isLocalAsset => !widget.coupon.storeLogo.startsWith('http');
+
+  Future<void> _revealAndOpen() async {
+    // 1. نسخ الكود
+    await Clipboard.setData(ClipboardData(text: widget.coupon.code));
+
+    // 2. إزالة الـ blur بـ animation
+    setState(() => _revealed = true);
+    _controller.forward();
+
+    // 3. فتح الموقع
+    if (widget.coupon.storeUrl.isNotEmpty) {
+      final Uri url = Uri.parse(widget.coupon.storeUrl);
+      try {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        debugPrint('Could not launch $url: $e');
+      }
+    }
+
+    // 4. SnackBar
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(children: [
             const Icon(Icons.check_circle, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Text(
-              'تم نسخ الكود: ${coupon.code}',
-              style: const TextStyle(
-                fontFamily: 'Cairo',
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+            Text('تم نسخ الكود: ${widget.coupon.code}',
+                style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontWeight: FontWeight.bold)),
+          ]),
+          backgroundColor: AppTheme.primary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 2),
         ),
-        backgroundColor: AppTheme.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildLogo() {
     if (_isLocalAsset) {
-      return Image.asset(
-        coupon.storeLogo,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => _fallbackText(),
-      );
+      return Image.asset(widget.coupon.storeLogo, fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => _fallback());
     }
-    return Image.network(
-      coupon.storeLogo,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => _fallbackText(),
-    );
+    return Image.network(widget.coupon.storeLogo, fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _fallback());
   }
 
-  Widget _fallbackText() => Center(
-    child: Text(
-      coupon.storeName,
-      style: const TextStyle(
-        fontFamily: 'Cairo',
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-        fontSize: 12,
-      ),
-      textAlign: TextAlign.center,
-    ),
-  );
+  Widget _fallback() => Center(
+        child: Text(widget.coupon.storeName,
+            style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
+            textAlign: TextAlign.center),
+      );
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Center(
-          child: Text(
-            '\n\nDISCOUNT\n\n',
-            style: TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-              fontFamily: 'Cairo',
-              letterSpacing: 2,
-            ),
-          ),
-        ),
-        Positioned(
-          height: 200,
-          child: ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(color: AppTheme.background.withOpacity(0.5)),
-            ),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppTheme.background.withOpacity(1),
-                AppTheme.background.withOpacity(0.7),
+    final screenWidth = MediaQuery.of(context).size.width;
 
-                AppTheme.background.withOpacity(0.3),
-              ],
-            ),
-            color: AppTheme.background,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            // border: Border.all(color: AppTheme.background, width: 1),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: badgeColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          coupon.badge,
-                          style: TextStyle(
-                            color: badgeTextColor,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Cairo',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        coupon.title,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                          fontFamily: 'Cairo',
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.access_time,
-                            size: 12,
-                            color: AppTheme.textSecondaryinWhite,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            coupon.expiryText,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppTheme.textSecondaryinWhite,
-                              fontFamily: 'Cairo',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: () => _copyCode(context),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.copy, color: Colors.white, size: 14),
-                              SizedBox(width: 6),
-                              Text(
-                                'نسخ',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 4)),
+        ],
+        border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // ===== LEFT: Info =====
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(20)),
+                      child: Text(widget.coupon.badge,
+                          style: TextStyle(color: badgeTextColor, fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Title
+                    Text(widget.coupon.title,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary, fontFamily: 'Cairo')),
+                    const SizedBox(height: 4),
+
+                    // Expiry
+                    Row(children: [
+                      const Icon(Icons.access_time, size: 12, color: AppTheme.textSecondaryinWhite),
+                      const SizedBox(width: 4),
+                      Text(widget.coupon.expiryText,
+                          style: const TextStyle(fontSize: 11, color: AppTheme.textSecondaryinWhite, fontFamily: 'Cairo')),
+                    ]),
+                    const SizedBox(height: 14),
+
+                    // ===== BLUR + REVEAL BUTTON =====
+                    AnimatedBuilder(
+                      animation: _blurAnim,
+                      builder: (context, child) {
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // الكود خلف الـ blur
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F5F5),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFE0E0E0)),
+                              ),
+                              child: Text(
+                                widget.coupon.code,
+                                style: const TextStyle(
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimary,
+                                  letterSpacing: 2,
                                   fontFamily: 'Cairo',
                                 ),
+                                textAlign: TextAlign.center,
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
+                            ),
+
+                            // Blur layer (يختفي بعد الضغط)
+                            if (!_revealed || _blurAnim.value > 0)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: _blurAnim.value, sigmaY: _blurAnim.value),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    color: Colors.white.withOpacity(_revealed ? 0 : 0.6),
+                                  ),
+                                ),
+                              ),
+
+                            // زرار "اضغط للكشف" (يختفي بعد الكشف)
+                            if (!_revealed)
+                              GestureDetector(
+                                onTap: _revealAndOpen,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 3))],
+                                  ),
+                                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                                    Icon(Icons.copy, color: Colors.white, size: 14),
+                                    SizedBox(width: 6),
+                                    Text('نسخ وزيارة المتجر',
+                                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                                  ]),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+
+                    // بعد الكشف: زر "زيارة المتجر" منفصل
+                    if (_revealed) ...[
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: () async {
-                          if (coupon.storeUrl.isNotEmpty) {
-                            final Uri url = Uri.parse(coupon.storeUrl);
-                            try {
-                              await launchUrl(
-                                url,
-                                mode: LaunchMode.externalApplication,
-                              );
-                            } catch (e) {
-                              debugPrint('Could not launch $url: $e');
-                            }
-                          }
+                          final Uri url = Uri.parse(widget.coupon.storeUrl);
+                          try { await launchUrl(url, mode: LaunchMode.externalApplication); } catch (_) {}
                         },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.open_in_new,
-                              size: 13,
-                              color: AppTheme.textSecondaryinWhite,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'زيارة المتجر',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppTheme.textSecondaryinWhite,
-                                fontFamily: 'Cairo',
-                                decoration: TextDecoration.underline,
-                                decorationColor: AppTheme.textSecondaryinWhite,
-                              ),
-                            ),
-                          ],
-                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.open_in_new, size: 13, color: AppTheme.textSecondaryinWhite),
+                          const SizedBox(width: 4),
+                          Text('زيارة المتجر',
+                              style: TextStyle(fontSize: 13, color: AppTheme.textSecondaryinWhite, fontFamily: 'Cairo',
+                                  decoration: TextDecoration.underline, decorationColor: AppTheme.textSecondaryinWhite)),
+                        ]),
                       ),
                     ],
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  width: MediaQuery.of(context).size.width * 0.5 - 40,
-                  height: MediaQuery.of(context).size.height * 0.20 - 40,
-                  decoration: BoxDecoration(
-                    // color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(0),
-                  ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // ===== RIGHT: Logo =====
+              SizedBox(
+                width: screenWidth * 0.28,
+                height: screenWidth * 0.28,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
                   child: _buildLogo(),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

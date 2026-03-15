@@ -11,71 +11,23 @@ class StoreItem extends StatelessWidget {
   bool get _isLocal => !store.logoUrl.startsWith('http');
 
   Widget _buildLogo() {
-    if (_isLocal) {
-      if (store.logoUrl.endsWith('.svg')) {
-        // return Center(
-        //   child: Text(
-        //     store.name,
-        //     style: const TextStyle(
-        //       fontSize: 9,
-        //       fontFamily: 'Cairo',
-        //       color: Colors.black,
-        //       fontWeight: FontWeight.bold,
-        //     ),
-        //     textAlign: TextAlign.center,
-        //   ),
-        // );
-        return SvgPicture.asset(
-          store.logoUrl,
-          fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => Center(
-            child: Text(
-              store.name,
-              style: const TextStyle(
-                fontSize: 9,
-                fontFamily: 'Cairo',
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        );
-      }
-      return Image.asset(
-        store.logoUrl,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => Center(
-          child: Text(
-            store.name,
-            style: const TextStyle(
-              fontSize: 9,
-              fontFamily: 'Cairo',
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
+    if (_isLocal && store.logoUrl.endsWith('.svg')) {
+      return SvgPicture.asset(store.logoUrl, fit: BoxFit.contain,
+          placeholderBuilder: (_) => _fallback());
     }
-    return Image.network(
-      store.logoUrl,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => Center(
-        child: Text(
-          store.name,
-          style: const TextStyle(
-            fontSize: 9,
-            fontFamily: 'Cairo',
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
+    if (_isLocal) {
+      return Image.asset(store.logoUrl, fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => _fallback());
+    }
+    return Image.network(store.logoUrl, fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => _fallback());
   }
+
+  Widget _fallback() => Center(
+        child: Text(store.name,
+            style: const TextStyle(fontSize: 9, fontFamily: 'Cairo', color: Colors.black, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -88,33 +40,22 @@ class StoreItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.background,
           borderRadius: BorderRadius.circular(12),
-          // border: Border.all(color: AppTheme.cardBorder),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2))],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 50,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(6),
-              ),
+              width: 50, height: 36,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
               padding: const EdgeInsets.all(4),
               child: _buildLogo(),
             ),
             const SizedBox(height: 6),
-            Text(
-              store.name,
-              style: const TextStyle(
-                fontSize: 11,
-                fontFamily: 'Cairo',
-                color: AppTheme.textPrimary,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
+            Text(store.name,
+                style: const TextStyle(fontSize: 11, fontFamily: 'Cairo', color: AppTheme.textPrimary),
+                maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
           ],
         ),
       ),

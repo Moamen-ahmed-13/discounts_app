@@ -1,3 +1,4 @@
+// lib/models/coupon.dart
 
 class Coupon {
   final String id;
