@@ -1,4 +1,3 @@
-// lib/data/mock_data.dart
 
 import '../models/coupon.dart';
 

@@ -82,7 +82,6 @@ class _FilterSheetState extends State<FilterSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
           Center(
             child: Container(
               width: 40,
@@ -94,7 +93,6 @@ class _FilterSheetState extends State<FilterSheet> {
           ),
           const SizedBox(height: 16),
 
-          // Header
           Row(
             children: [
               const Text('🏷️  كوبونات مميزة',
@@ -116,25 +114,20 @@ class _FilterSheetState extends State<FilterSheet> {
                   fontSize: 12, fontFamily: 'Cairo', color: AppTheme.primary)),
           const SizedBox(height: 20),
 
-          // Duration
           _buildDropdown('⏰  المدة:', _options.duration, _durations,
               (v) => setState(() => _options = _options.copyWith(duration: v))),
           const SizedBox(height: 16),
 
-          // Company
           _buildDropdown('🏢  الشركة/البراند:', _options.company, _companies,
               (v) => setState(() => _options = _options.copyWith(company: v))),
           const SizedBox(height: 16),
 
-          // Country
           _buildDropdown('🌐  الدولة:', _options.country, _countries,
               (v) => setState(() => _options = _options.copyWith(country: v))),
           const SizedBox(height: 24),
 
-          // Buttons
           Row(
             children: [
-              // Reset
               Expanded(
                 child: GestureDetector(
                   onTap: () => setState(() => _options = FilterOptions()),
@@ -159,7 +152,6 @@ class _FilterSheetState extends State<FilterSheet> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Apply
               Expanded(
                 child: GestureDetector(
                   onTap: () => Navigator.pop(context, _options),

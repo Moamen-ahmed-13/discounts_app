@@ -36,14 +36,11 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
   bool get _isLocalAsset => !widget.coupon.storeLogo.startsWith('http');
 
   Future<void> _revealAndOpen() async {
-    // 1. نسخ الكود
     await Clipboard.setData(ClipboardData(text: widget.coupon.code));
 
-    // 2. إزالة الـ blur بـ animation
     setState(() => _revealed = true);
     _controller.forward();
 
-    // 3. فتح الموقع
     if (widget.coupon.storeUrl.isNotEmpty) {
       final Uri url = Uri.parse(widget.coupon.storeUrl);
       try {
@@ -53,7 +50,6 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
       }
     }
 
-    // 4. SnackBar
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -109,13 +105,11 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ===== LEFT: Info =====
               Expanded(
                 flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Badge
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                       decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(20)),
@@ -124,12 +118,10 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
                     ),
                     const SizedBox(height: 8),
 
-                    // Title
                     Text(widget.coupon.title,
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary, fontFamily: 'Cairo')),
                     const SizedBox(height: 4),
 
-                    // Expiry
                     Row(children: [
                       const Icon(Icons.access_time, size: 12, color: AppTheme.textSecondaryinWhite),
                       const SizedBox(width: 4),
@@ -138,14 +130,12 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
                     ]),
                     const SizedBox(height: 14),
 
-                    // ===== BLUR + REVEAL BUTTON =====
                     AnimatedBuilder(
                       animation: _blurAnim,
                       builder: (context, child) {
                         return Stack(
                           alignment: Alignment.center,
                           children: [
-                            // الكود خلف الـ blur
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -167,7 +157,6 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
                               ),
                             ),
 
-                            // Blur layer (يختفي بعد الضغط)
                             if (!_revealed || _blurAnim.value > 0)
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
@@ -181,7 +170,6 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
                                 ),
                               ),
 
-                            // زرار "اضغط للكشف" (يختفي بعد الكشف)
                             if (!_revealed)
                               GestureDetector(
                                 onTap: _revealAndOpen,
@@ -205,7 +193,6 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
                       },
                     ),
 
-                    // بعد الكشف: زر "زيارة المتجر" منفصل
                     if (_revealed) ...[
                       const SizedBox(height: 8),
                       GestureDetector(
@@ -228,7 +215,6 @@ class _CouponCardState extends State<CouponCard> with SingleTickerProviderStateM
 
               const SizedBox(width: 12),
 
-              // ===== RIGHT: Logo =====
               SizedBox(
                 width: screenWidth * 0.28,
                 height: screenWidth * 0.28,

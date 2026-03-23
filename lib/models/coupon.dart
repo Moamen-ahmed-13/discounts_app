@@ -1,4 +1,3 @@
-// lib/models/coupon.dart
 
 class Coupon {
   final String id;
@@ -9,7 +8,7 @@ class Coupon {
   final String title;
   final String code;
   final String expiryText;
-  final String badge; // حصري, مميز, جديد, عرض خاص
+  final String badge; 
   final String storeUrl;
   final int discountPercent;
   final String category;
