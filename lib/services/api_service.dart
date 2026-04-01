@@ -11,18 +11,16 @@ class ApiService {
     'Content-Type': 'application/json',
   };
 
-  // ─── Full bundle (كل البيانات دفعة واحدة) ───────────────────────
+  // ─── Full bundle ──────────────────────────────────────────────────
   static Future<HomeBundle> fetchHome() async {
     final res = await http
         .get(Uri.parse('$baseUrl/api/home'), headers: _headers)
         .timeout(const Duration(seconds: 15));
-    if (res.statusCode == 200) {
-      return HomeBundle.fromJson(jsonDecode(res.body));
-    }
+    if (res.statusCode == 200) return HomeBundle.fromJson(jsonDecode(res.body));
     throw Exception('فشل تحميل البيانات (${res.statusCode})');
   }
 
-  // ─── Stores ──────────────────────────────────────────────────────
+  // ─── Stores ───────────────────────────────────────────────────────
   static Future<List<Store>> fetchStores() async {
     final res = await http
         .get(Uri.parse('$baseUrl/api/stores'), headers: _headers)
@@ -35,22 +33,20 @@ class ApiService {
     throw Exception('فشل تحميل المتاجر (${res.statusCode})');
   }
 
-  // ─── Coupons ─────────────────────────────────────────────────────
+  // ─── Coupons ──────────────────────────────────────────────────────
   static Future<List<Coupon>> fetchCoupons({String type = 'latest'}) async {
-    // type: latest | most-used | high-discount
     final res = await http
         .get(Uri.parse('$baseUrl/api/coupons/$type'), headers: _headers)
         .timeout(const Duration(seconds: 15));
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
-      final list =
-          data is List ? data : (data['data'] ?? data['coupons'] ?? []);
+      final list = data is List ? data : (data['data'] ?? data['coupons'] ?? []);
       return (list as List).map((e) => Coupon.fromJson(e)).toList();
     }
     throw Exception('فشل تحميل الكوبونات (${res.statusCode})');
   }
 
-  // ─── Offers (للـ featured slider) ────────────────────────────────
+  // ─── Offers ───────────────────────────────────────────────────────
   static Future<List<Store>> fetchOffers() async {
     final res = await http
         .get(Uri.parse('$baseUrl/api/offers'), headers: _headers)
@@ -74,5 +70,50 @@ class ApiService {
       return (list as List).map((e) => e['name']?.toString() ?? '').toList();
     }
     throw Exception('فشل تحميل فلاتر المتاجر (${res.statusCode})');
+  }
+
+  // ─── Newsletter Subscribe ─────────────────────────────────────────
+  /// POST /api/newsletter/subscribe
+  /// body: { "email": "user@example.com" }
+  static Future<bool> subscribeNewsletter(String email) async {
+    try {
+      final res = await http
+          .post(
+            Uri.parse('$baseUrl/api/newsletter/subscribe'),
+            headers: _headers,
+            body: jsonEncode({'email': email}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      // 200 أو 201 = نجاح
+      if (res.statusCode == 200 || res.statusCode == 201) return true;
+
+      // لو في error message من الـ server
+      final data = jsonDecode(res.body);
+      final msg = data['message']?.toString() ?? '';
+      throw Exception(msg.isNotEmpty ? msg : 'فشل الاشتراك (${res.statusCode})');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ─── Labels ───────────────────────────────────────────────────────
+  static Future<Map<String, List<String>>> fetchLabels() async {
+    final res = await http
+        .get(Uri.parse('$baseUrl/api/labels'), headers: _headers)
+        .timeout(const Duration(seconds: 15));
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      List<String> parseList(dynamic v) {
+        if (v == null) return [];
+        if (v is List) return v.map((e) => e['name']?.toString() ?? e.toString()).toList();
+        return [];
+      }
+      return {
+        'countries': parseList(data['countries'] ?? data['country']),
+        'durations': parseList(data['durations'] ?? data['duration']),
+      };
+    }
+    throw Exception('فشل تحميل التصنيفات (${res.statusCode})');
   }
 }

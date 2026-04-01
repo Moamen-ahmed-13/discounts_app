@@ -246,7 +246,8 @@ class ApiCouponCard extends StatefulWidget {
   State<ApiCouponCard> createState() => _ApiCouponCardState();
 }
 
-class _ApiCouponCardState extends State<ApiCouponCard> with SingleTickerProviderStateMixin {
+class _ApiCouponCardState extends State<ApiCouponCard>
+    with SingleTickerProviderStateMixin {
   bool _revealed = false;
   late AnimationController _controller;
   late Animation<double> _blurAnim;
@@ -254,29 +255,43 @@ class _ApiCouponCardState extends State<ApiCouponCard> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
-    _blurAnim = Tween<double>(begin: 8.0, end: 0.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+    _blurAnim = Tween<double>(begin: 8.0, end: 0.0)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
-  void dispose() { _controller.dispose(); super.dispose(); }
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
-  Color get badgeColor => AppTheme.badgeColors[widget.coupon.badge] ?? AppTheme.primary;
-  Color get badgeTextColor => AppTheme.badgeTextColors[widget.coupon.badge] ?? Colors.black;
+  Color get badgeColor =>
+      AppTheme.badgeColors[widget.coupon.badge] ?? AppTheme.primary;
+  Color get badgeTextColor =>
+      AppTheme.badgeTextColors[widget.coupon.badge] ?? Colors.black;
 
   Future<void> _revealAndOpen() async {
     await Clipboard.setData(ClipboardData(text: widget.coupon.code));
     setState(() => _revealed = true);
     _controller.forward();
     if (widget.coupon.storeUrl.isNotEmpty) {
-      try { await launchUrl(Uri.parse(widget.coupon.storeUrl), mode: LaunchMode.externalApplication); } catch (_) {}
+      try {
+        await launchUrl(Uri.parse(widget.coupon.storeUrl),
+            mode: LaunchMode.externalApplication);
+      } catch (_) {}
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Row(children: [
-          const Icon(Icons.check_circle, color: Colors.white, size: 18), const SizedBox(width: 8),
+          const Icon(Icons.check_circle, color: Colors.white, size: 18),
+          const SizedBox(width: 8),
           Text('تم نسخ الكود: ${widget.coupon.code}',
-              style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontWeight: FontWeight.bold)),
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold)),
         ]),
         backgroundColor: AppTheme.primary,
         behavior: SnackBarBehavior.floating,
@@ -289,12 +304,27 @@ class _ApiCouponCardState extends State<ApiCouponCard> with SingleTickerProvider
 
   Widget _buildLogo() {
     final url = widget.coupon.storeLogo;
-    if (url.isEmpty) return Center(child: Text(widget.coupon.storeName,
-        style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12), textAlign: TextAlign.center));
-    return CachedNetworkImage(imageUrl: url, fit: BoxFit.contain,
+    if (url.isEmpty)
+      return Center(
+          child: Text(widget.coupon.storeName,
+              style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontSize: 12),
+              textAlign: TextAlign.center));
+    return CachedNetworkImage(
+        imageUrl: url,
+        fit: BoxFit.contain,
         placeholder: (_, __) => Container(color: Colors.grey[100]),
-        errorWidget: (_, __, ___) => Center(child: Text(widget.coupon.storeName,
-            style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12), textAlign: TextAlign.center)));
+        errorWidget: (_, __, ___) => Center(
+            child: Text(widget.coupon.storeName,
+                style: const TextStyle(
+                    fontFamily: 'Cairo',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontSize: 12),
+                textAlign: TextAlign.center)));
   }
 
   @override
@@ -303,8 +333,14 @@ class _ApiCouponCardState extends State<ApiCouponCard> with SingleTickerProvider
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: AppTheme.background, borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 4))],
+        color: AppTheme.background,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 4))
+        ],
         border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
       ),
       child: ClipRRect(
@@ -312,75 +348,146 @@ class _ApiCouponCardState extends State<ApiCouponCard> with SingleTickerProvider
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Expanded(flex: 3, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(20)),
-                child: Text(widget.coupon.badge,
-                    style: TextStyle(color: badgeTextColor, fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
-              ),
-              const SizedBox(height: 8),
-              Text(widget.coupon.title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary, fontFamily: 'Cairo')),
-              const SizedBox(height: 4),
-              if (widget.coupon.expiryText.isNotEmpty)
-                Row(children: [
-                  const Icon(Icons.access_time, size: 12, color: AppTheme.textSecondaryinWhite), const SizedBox(width: 4),
-                  Text(widget.coupon.expiryText, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondaryinWhite, fontFamily: 'Cairo')),
-                ]),
-              const SizedBox(height: 14),
-              AnimatedBuilder(
-                animation: _blurAnim,
-                builder: (context, _) => Stack(alignment: Alignment.center, children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFE0E0E0))),
-                    child: Text(widget.coupon.code,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary, letterSpacing: 2, fontFamily: 'Cairo'),
-                        textAlign: TextAlign.center),
-                  ),
-                  if (!_revealed || _blurAnim.value > 0)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: _blurAnim.value, sigmaY: _blurAnim.value),
-                        child: Container(width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            color: Colors.white.withOpacity(_revealed ? 0 : 0.6)),
+            Expanded(
+                flex: 3,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                            color: badgeColor,
+                            borderRadius: BorderRadius.circular(20)),
+                        child: Text(widget.coupon.badge,
+                            style: TextStyle(
+                                color: badgeTextColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Cairo')),
                       ),
-                    ),
-                  if (!_revealed)
-                    GestureDetector(
-                      onTap: _revealAndOpen,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(8),
-                            boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 3))]),
-                        child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.copy, color: Colors.white, size: 14), SizedBox(width: 6),
-                          Text('نسخ وزيارة المتجر', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                      const SizedBox(height: 8),
+                      Text(widget.coupon.title,
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                              fontFamily: 'Cairo')),
+                      const SizedBox(height: 4),
+                      if (widget.coupon.expiryText.isNotEmpty)
+                        Row(children: [
+                          const Icon(Icons.access_time,
+                              size: 12, color: AppTheme.textSecondaryinWhite),
+                          const SizedBox(width: 4),
+                          Text(widget.coupon.expiryText,
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.textSecondaryinWhite,
+                                  fontFamily: 'Cairo')),
+                        ]),
+                      const SizedBox(height: 14),
+                      AnimatedBuilder(
+                        animation: _blurAnim,
+                        builder: (context, _) =>
+                            Stack(alignment: Alignment.center, children: [
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                                color: const Color(0xFFF5F5F5),
+                                borderRadius: BorderRadius.circular(10),
+                                border:
+                                    Border.all(color: const Color(0xFFE0E0E0))),
+                            child: Text(widget.coupon.code,
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
+                                    letterSpacing: 2,
+                                    fontFamily: 'Cairo'),
+                                textAlign: TextAlign.center),
+                          ),
+                          if (!_revealed || _blurAnim.value > 0)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                    sigmaX: _blurAnim.value,
+                                    sigmaY: _blurAnim.value),
+                                child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 10),
+                                    color: Colors.white
+                                        .withOpacity(_revealed ? 0 : 0.6)),
+                              ),
+                            ),
+                          if (!_revealed)
+                            GestureDetector(
+                              onTap: _revealAndOpen,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                    color: AppTheme.primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color:
+                                              AppTheme.primary.withOpacity(0.4),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3))
+                                    ]),
+                                child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.copy,
+                                          color: Colors.white, size: 14),
+                                      SizedBox(width: 6),
+                                      Text('نسخ الكود',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'Cairo')),
+                                    ]),
+                              ),
+                            ),
                         ]),
                       ),
-                    ),
-                ]),
-              ),
-              if (_revealed) ...[
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () async { try { await launchUrl(Uri.parse(widget.coupon.storeUrl), mode: LaunchMode.externalApplication); } catch (_) {} },
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.open_in_new, size: 13, color: AppTheme.textSecondaryinWhite), const SizedBox(width: 4),
-                    Text('زيارة المتجر', style: TextStyle(fontSize: 13, color: AppTheme.textSecondaryinWhite, fontFamily: 'Cairo',
-                        decoration: TextDecoration.underline, decorationColor: AppTheme.textSecondaryinWhite)),
-                  ]),
-                ),
-              ],
-            ])),
+                      if (_revealed) ...[
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            try {
+                              await launchUrl(Uri.parse(widget.coupon.storeUrl),
+                                  mode: LaunchMode.externalApplication);
+                            } catch (_) {}
+                          },
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            const Icon(Icons.open_in_new,
+                                size: 13, color: AppTheme.textSecondaryinWhite),
+                            const SizedBox(width: 4),
+                            Text('زيارة المتجر',
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppTheme.textSecondaryinWhite,
+                                    fontFamily: 'Cairo',
+                                    decoration: TextDecoration.underline,
+                                    decorationColor:
+                                        AppTheme.textSecondaryinWhite)),
+                          ]),
+                        ),
+                      ],
+                    ])),
             const SizedBox(width: 12),
-            SizedBox(width: sw * 0.28, height: sw * 0.28,
-                child: ClipRRect(borderRadius: BorderRadius.circular(12), child: _buildLogo())),
+            SizedBox(
+                width: sw * 0.28,
+                height: sw * 0.28,
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _buildLogo())),
           ]),
         ),
       ),

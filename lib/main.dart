@@ -1,8 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 import 'theme.dart';
 
 void main() {
@@ -20,7 +19,7 @@ class DiscountsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'عالم الخصومات',
+      title: 'كوبوني',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       locale: const Locale('ar'),
@@ -30,7 +29,7 @@ class DiscountsApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }
