@@ -31,30 +31,30 @@ class AppTheme {
   };
 
   static ThemeData get theme => ThemeData(
-    brightness: Brightness.dark,
-    fontFamily: 'Cairo',
-    colorScheme: ColorScheme.dark(
-      primary: primary,
-      secondary: secondary,
-      background: background,
-      surface: surface,
-    ),
-    scaffoldBackgroundColor: background,
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF111111),
-      foregroundColor: textPrimary,
-      elevation: 0,
-      centerTitle: true,
-    ),
-    cardTheme: CardThemeData(
-      color: cardBg,
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: cardBorder, width: 1),
-      ),
-    ),
-    useMaterial3: true,
-  );
+        brightness: Brightness.dark,
+        fontFamily: 'Cairo',
+        colorScheme: ColorScheme.dark(
+          primary: primary,
+          secondary: secondary,
+          background: background,
+          surface: surface,
+        ),
+        scaffoldBackgroundColor: background,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF111111),
+          foregroundColor: textPrimary,
+          elevation: 0,
+          centerTitle: true,
+        ),
+        cardTheme: CardThemeData(
+          color: cardBg,
+          elevation: 4,
+          shadowColor: Colors.black.withOpacity(0.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: cardBorder, width: 1),
+          ),
+        ),
+        useMaterial3: true,
+      );
 }
