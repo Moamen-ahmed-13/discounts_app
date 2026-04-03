@@ -4,7 +4,8 @@ import '../models/coupon.dart';
 import '../models/api_models.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://coupons.bioagency.net';
+  static const String baseUrl = 'https://couponey.net';
+  static const String _oldBaseUrl = 'https://coupons.bioagency.net';
 
   static const Map<String, String> _headers = {
     'Accept': 'application/json',
@@ -40,7 +41,8 @@ class ApiService {
         .timeout(const Duration(seconds: 15));
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
-      final list = data is List ? data : (data['data'] ?? data['coupons'] ?? []);
+      final list =
+          data is List ? data : (data['data'] ?? data['coupons'] ?? []);
       return (list as List).map((e) => Coupon.fromJson(e)).toList();
     }
     throw Exception('فشل تحميل الكوبونات (${res.statusCode})');
@@ -73,28 +75,55 @@ class ApiService {
   }
 
   // ─── Newsletter Subscribe ─────────────────────────────────────────
-  /// POST /api/newsletter/subscribe
-  /// body: { "email": "user@example.com" }
+  // بيجرب الـ domains الاتنين
   static Future<bool> subscribeNewsletter(String email) async {
-    try {
-      final res = await http
-          .post(
-            Uri.parse('$baseUrl/api/newsletter/subscribe'),
-            headers: _headers,
-            body: jsonEncode({'email': email}),
-          )
-          .timeout(const Duration(seconds: 10));
+    final urls = [
+      '$baseUrl/api/newsletter/subscribe',
+      '$_oldBaseUrl/api/newsletter/subscribe',
+      '$baseUrl/api/subscribers',
+      '$_oldBaseUrl/api/subscribers',
+      '$baseUrl/api/subscribe',
+      '$_oldBaseUrl/api/subscribe',
+    ];
 
-      // 200 أو 201 = نجاح
-      if (res.statusCode == 200 || res.statusCode == 201) return true;
+    for (final url in urls) {
+      try {
+        final res = await http
+            .post(
+              Uri.parse(url),
+              headers: _headers,
+              body: jsonEncode({'email': email}),
+            )
+            .timeout(const Duration(seconds: 8));
 
-      // لو في error message من الـ server
-      final data = jsonDecode(res.body);
-      final msg = data['message']?.toString() ?? '';
-      throw Exception(msg.isNotEmpty ? msg : 'فشل الاشتراك (${res.statusCode})');
-    } catch (e) {
-      rethrow;
+        if (res.statusCode == 200 || res.statusCode == 201) {
+          return true;
+        }
+        if (res.statusCode == 404 || res.statusCode == 405) continue;
+
+        // status آخر - اقرأ الـ message
+        try {
+          final data = jsonDecode(res.body);
+          final msg = data['message']?.toString() ?? '';
+          if (msg.isNotEmpty && !msg.toLowerCase().contains('not found')) {
+            throw Exception(msg);
+          }
+        } catch (_) {}
+        continue;
+      } catch (e) {
+        final err = e.toString().toLowerCase();
+        if (err.contains('not found') ||
+            err.contains('404') ||
+            err.contains('timeout')) {
+          continue;
+        }
+        rethrow;
+      }
     }
+
+    // كل الـ endpoints فشلت - الـ route مش موجود في الـ backend
+    // ابعت رسالة للـ developer عشان يضيف الـ route
+    throw Exception('backend_missing_route');
   }
 
   // ─── Labels ───────────────────────────────────────────────────────
@@ -106,9 +135,11 @@ class ApiService {
       final data = jsonDecode(res.body);
       List<String> parseList(dynamic v) {
         if (v == null) return [];
-        if (v is List) return v.map((e) => e['name']?.toString() ?? e.toString()).toList();
+        if (v is List)
+          return v.map((e) => e['name']?.toString() ?? e.toString()).toList();
         return [];
       }
+
       return {
         'countries': parseList(data['countries'] ?? data['country']),
         'durations': parseList(data['durations'] ?? data['duration']),
