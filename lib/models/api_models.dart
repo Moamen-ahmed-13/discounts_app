@@ -1,5 +1,6 @@
 import 'coupon.dart';
 
+// ─── Home Bundle (/api/home) ──────────────────────────────────────
 class HomeBundle {
   final List<Store> stores;
   final List<Store> offers;
@@ -7,7 +8,12 @@ class HomeBundle {
   final SiteInfo? site;
   final HeroData? hero;
 
-  HomeBundle({required this.stores, required this.offers, required this.coupons, this.site, this.hero});
+  HomeBundle(
+      {required this.stores,
+      required this.offers,
+      required this.coupons,
+      this.site,
+      this.hero});
 
   factory HomeBundle.fromJson(Map<String, dynamic> json) {
     List<Store> parseStores(dynamic raw) {
@@ -52,7 +58,6 @@ class SiteInfo {
   final String tagline;
   final String? logoUrl;
   final String? logoWhiteUrl;
-  // السوشيال ميديا من الـ site
   final String? facebookUrl;
   final String? instagramUrl;
   final String? tiktokUrl;
@@ -72,41 +77,50 @@ class SiteInfo {
   });
 
   factory SiteInfo.fromJson(Map<String, dynamic> json) {
-    // السوشيال ميديا ممكن تيجي nested في social_links أو مباشرة
     final social = json['social_links'] as Map<String, dynamic>? ??
-        json['social'] as Map<String, dynamic>? ?? {};
-
+        json['social'] as Map<String, dynamic>? ??
+        {};
     return SiteInfo(
       name: json['name']?.toString() ?? json['site_name']?.toString() ?? '',
-      tagline: json['tagline']?.toString() ?? json['description']?.toString() ?? '',
+      tagline:
+          json['tagline']?.toString() ?? json['description']?.toString() ?? '',
       logoUrl: json['logo']?.toString() ?? json['logo_url']?.toString(),
-      logoWhiteUrl: json['logo_white']?.toString() ?? json['logo_w']?.toString(),
-      facebookUrl: social['facebook']?.toString() ?? json['facebook']?.toString() ?? json['facebook_url']?.toString(),
-      instagramUrl: social['instagram']?.toString() ?? json['instagram']?.toString() ?? json['instagram_url']?.toString(),
-      tiktokUrl: social['tiktok']?.toString() ?? json['tiktok']?.toString() ?? json['tiktok_url']?.toString(),
-      whatsappUrl: social['whatsapp']?.toString() ?? json['whatsapp']?.toString() ?? json['whatsapp_url']?.toString(),
-      twitterUrl: social['twitter']?.toString() ?? json['twitter']?.toString() ?? json['twitter_url']?.toString(),
+      logoWhiteUrl:
+          json['logo_white']?.toString() ?? json['logo_w']?.toString(),
+      facebookUrl: social['facebook']?.toString() ??
+          json['facebook']?.toString() ??
+          json['facebook_url']?.toString(),
+      instagramUrl: social['instagram']?.toString() ??
+          json['instagram']?.toString() ??
+          json['instagram_url']?.toString(),
+      tiktokUrl: social['tiktok']?.toString() ??
+          json['tiktok']?.toString() ??
+          json['tiktok_url']?.toString(),
+      whatsappUrl: social['whatsapp']?.toString() ??
+          json['whatsapp']?.toString() ??
+          json['whatsapp_url']?.toString(),
+      twitterUrl: social['twitter']?.toString() ??
+          json['twitter']?.toString() ??
+          json['twitter_url']?.toString(),
     );
   }
 }
 
-// ─── Hero Data (/api/hero - also footer) ─────────────────────────
+// ─── Hero Data (/api/hero) ────────────────────────────────────────
+// يغطي: hero section + banner announcements + footer
 class HeroData {
   final String title;
   final String description;
-  final String? imageUrl;
-  final String? bgImageUrl;
-  // البانر messages اللي بتتدور
-  final List<String> announcementMessages;
-  // footer data
+  final String? imageUrl; // الصورة الجانبية (side_image)
+  final String? bgImageUrl; // الخلفية (bg_image)
+  final List<String> announcementMessages; // الشريط العلوي المتحرك
   final String? footerDescription;
-  // السوشيال ميديا من الـ footer
+  // social
   final String? facebookUrl;
   final String? instagramUrl;
   final String? tiktokUrl;
   final String? whatsappUrl;
   final String? twitterUrl;
-  // footer logo
   final String? logoUrl;
   final String? logoWhiteUrl;
 
@@ -127,34 +141,133 @@ class HeroData {
   });
 
   factory HeroData.fromJson(Map<String, dynamic> json) {
-    // البانر ممكن يكون list في 'announcements' أو 'banners' أو 'marquee'
+    // ─── Banner messages ───────────────────────────────────────────
+    // الداشبورد: announcements[] - كل عنصر ممكن يكون String أو Map
     List<String> parseMessages(dynamic raw) {
       if (raw == null) return [];
-      if (raw is List) return raw.map((e) => e['text']?.toString() ?? e['message']?.toString() ?? e.toString()).where((s) => s.isNotEmpty).toList();
+      if (raw is List) {
+        return raw
+            .map((e) {
+              if (e is String) return e;
+              if (e is Map) {
+                return e['text']?.toString() ??
+                    e['message']?.toString() ??
+                    e['content']?.toString() ??
+                    e['title']?.toString() ??
+                    e['phrase']?.toString() ??
+                    '';
+              }
+              return e.toString();
+            })
+            .where((s) => s.isNotEmpty)
+            .toList();
+      }
       if (raw is String && raw.isNotEmpty) return [raw];
       return [];
     }
 
-    // السوشيال ميديا ممكن تكون nested في social_links أو مباشرة
     final social = json['social_links'] as Map<String, dynamic>? ??
-        json['social'] as Map<String, dynamic>? ?? {};
+        json['social'] as Map<String, dynamic>? ??
+        {};
 
     return HeroData(
-      title: json['title']?.toString() ?? json['heading']?.toString() ?? 'وفر أكثر مع كوبون X!',
-      description: json['description']?.toString() ?? json['subtitle']?.toString() ?? json['text']?.toString() ?? '',
-      imageUrl: json['image']?.toString() ?? json['image_url']?.toString() ?? json['hero_image']?.toString(),
-      bgImageUrl: json['bg_image']?.toString() ?? json['background']?.toString() ?? json['background_image']?.toString(),
+      // ─── الداشبورد بيسميهم: title, subtitle, bg_image, side_image ──
+      title: json['title']?.toString() ??
+          json['heading']?.toString() ??
+          json['hero_title']?.toString() ??
+          '',
+      description: json['paragraph']?.toString() ??
+          json['description']?.toString() ??
+          json['hero_subtitle']?.toString() ??
+          json['text']?.toString() ??
+          '',
+      // الصورة الجانبية من الداشبورد (رفع الصورة الجانبية)
+      imageUrl: json['side_image']?.toString() ??
+          json['image']?.toString() ??
+          json['image_url']?.toString() ??
+          json['hero_image']?.toString(),
+      // الخلفية (رفع الصورة الخلفية)
+      bgImageUrl: json['bg_image']?.toString() ??
+          json['background_image']?.toString() ??
+          json['background']?.toString(),
+      // الشريط العلوي - الداشبورد: announcements[]
       announcementMessages: parseMessages(
-        json['announcements'] ?? json['banners'] ?? json['marquee'] ?? json['messages'] ?? json['ticker'],
+        json['announcements'] ??
+            json['banners'] ??
+            json['marquee'] ??
+            json['messages'] ??
+            json['ticker'] ??
+            json['phrases'],
       ),
-      footerDescription: json['footer_description']?.toString() ?? json['footer_text']?.toString(),
-      facebookUrl: social['facebook']?.toString() ?? json['facebook']?.toString() ?? json['facebook_url']?.toString(),
-      instagramUrl: social['instagram']?.toString() ?? json['instagram']?.toString() ?? json['instagram_url']?.toString(),
-      tiktokUrl: social['tiktok']?.toString() ?? json['tiktok']?.toString() ?? json['tiktok_url']?.toString(),
-      whatsappUrl: social['whatsapp']?.toString() ?? json['whatsapp']?.toString() ?? json['whatsapp_url']?.toString(),
-      twitterUrl: social['twitter']?.toString() ?? json['twitter']?.toString() ?? json['twitter_url']?.toString(),
+      footerDescription: json['footer_description']?.toString() ??
+          json['footer_text']?.toString(),
+      facebookUrl:
+          // social['facebook']?.toString() ??
+          //     json['facebook']?.toString() ??
+          json['facebook_url']?.toString(),
+      instagramUrl: social['instagram']?.toString() ??
+          json['instagram']?.toString() ??
+          json['instagram_url']?.toString(),
+      tiktokUrl: social['tiktok']?.toString() ??
+          json['tiktok']?.toString() ??
+          json['tiktok_url']?.toString(),
+      whatsappUrl: social['whatsapp']?.toString() ??
+          json['whatsapp']?.toString() ??
+          json['whatsapp_url']?.toString(),
+      twitterUrl: social['twitter']?.toString() ??
+          json['twitter']?.toString() ??
+          json['twitter_url']?.toString(),
       logoUrl: json['logo']?.toString() ?? json['logo_url']?.toString(),
-      logoWhiteUrl: json['logo_white']?.toString() ?? json['logo_w']?.toString(),
+      logoWhiteUrl:
+          json['logo_white']?.toString() ?? json['logo_w']?.toString(),
+    );
+  }
+}
+
+// ─── Footer Data (/api/footer) ───────────────────────────────────
+class FooterData {
+  final String siteName;
+  final String? logoUrl;
+  final String tagline;
+  final String? whatsappUrl;
+  final String? instagramUrl;
+  final String? facebookUrl;
+  final String? tiktokUrl;
+  final String newsletterTitle;
+  final String newsletterIntro;
+  final String newsletterPlaceholder;
+  final String copyrightYear;
+
+  FooterData({
+    required this.siteName,
+    this.logoUrl,
+    required this.tagline,
+    this.whatsappUrl,
+    this.instagramUrl,
+    this.facebookUrl,
+    this.tiktokUrl,
+    required this.newsletterTitle,
+    required this.newsletterIntro,
+    required this.newsletterPlaceholder,
+    required this.copyrightYear,
+  });
+
+  factory FooterData.fromJson(Map<String, dynamic> json) {
+    final social = json['social'] as Map<String, dynamic>? ?? {};
+    final newsletter = json['newsletter'] as Map<String, dynamic>? ?? {};
+    return FooterData(
+      siteName: json['site_name']?.toString() ?? '',
+      logoUrl: json['logo_url']?.toString(),
+      tagline: json['tagline']?.toString() ?? '',
+      whatsappUrl: social['whatsapp_url']?.toString(),
+      instagramUrl: social['instagram_url']?.toString(),
+      facebookUrl: social['facebook_url']?.toString(),
+      tiktokUrl: social['tiktok_url']?.toString(),
+      newsletterTitle: newsletter['title']?.toString() ?? 'النشرة البريدية',
+      newsletterIntro: newsletter['intro']?.toString() ?? '',
+      newsletterPlaceholder:
+          newsletter['placeholder']?.toString() ?? 'أدخل بريدك الإلكتروني',
+      copyrightYear: json['copyright_year']?.toString() ?? '2026',
     );
   }
 }
@@ -169,9 +282,15 @@ class AppLabels {
   factory AppLabels.fromJson(Map<String, dynamic> json) {
     List<String> parse(dynamic v) {
       if (v == null) return [];
-      if (v is List) return v.map((e) => e['name']?.toString() ?? e['label']?.toString() ?? e.toString()).where((s) => s.isNotEmpty).toList();
+      if (v is List)
+        return v
+            .map((e) =>
+                e['name']?.toString() ?? e['label']?.toString() ?? e.toString())
+            .where((s) => s.isNotEmpty)
+            .toList();
       return [];
     }
+
     return AppLabels(
       countries: parse(json['countries'] ?? json['country']),
       durations: parse(json['durations'] ?? json['duration']),

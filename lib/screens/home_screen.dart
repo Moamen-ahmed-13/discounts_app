@@ -108,6 +108,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ]);
 
       final bundle = results[0] as HomeBundle;
+
+      print('=== HERO ===');
+      print('title: ${bundle.hero?.title}');
+      print('description: ${bundle.hero?.description}');
+      print('bgImage: ${bundle.hero?.bgImageUrl}');
+      print('sideImage: ${bundle.hero?.imageUrl}');
+      print('hero is null: ${bundle.hero == null}');
+      print('=== SITE ===');
+      print('name: ${bundle.site?.name}');
       final labels = results[1] as AppLabels;
       final filterStores = results[2] as List<String>;
 
@@ -137,6 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ApiService.fetchLabels()
               .catchError((_) => AppLabels(countries: [], durations: [])),
           ApiService.fetchStoresForFilters().catchError((_) => <String>[]),
+          ApiService.fetchHero()
+              .catchError((_) => HeroData(title: '', description: '')),
+          ApiService.fetchSite()
+              .catchError((_) => SiteInfo(name: '', tagline: '')),
         ]);
         setState(() {
           _stores = results[0] as List<Store>;
@@ -145,6 +158,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _offerStores = offers.isNotEmpty ? offers : _stores;
           _labels = results[3] as AppLabels;
           _filterStores = results[4] as List<String>;
+          final heroFallback = results[5] as HeroData;
+          final siteFallback = results[6] as SiteInfo;
+          _hero = heroFallback.title.isNotEmpty ? heroFallback : null;
+          _site = siteFallback.name.isNotEmpty ? siteFallback : null;
           _loading = false;
         });
       } catch (e2) {
@@ -428,31 +445,61 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Widget _buildHeroSection() {
-    final title = _hero?.title ?? 'وفر أكثر مع كوبون X!';
-    final desc = _hero?.description ??
-        'استمتع بخصومات تصل إلى 70% على مجموعة واسعة من المنتجات من متاجرك المفضلة.';
+    final title = (_hero?.title != null && _hero!.title.isNotEmpty)
+        ? _hero!.title
+        : 'وفر أكثر مع كوبوني';
+    final desc = (_hero?.description != null && _hero!.description.isNotEmpty)
+        ? _hero!.description
+        : 'استمتع بخصومات تصل إلى 50% على مجموعة واسعة من المنتجات من متاجرك المفضلة.';
     final heroImage = _hero?.imageUrl;
+    final bgImage = _hero?.bgImageUrl;
+
+    // ── Background: API bg image أو asset fallback ──
+    Widget bgWidget;
+    if (bgImage != null && bgImage.isNotEmpty) {
+      bgWidget = Image.network(
+        bgImage,
+        width: double.infinity,
+        height: 420,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/back.png',
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Container(color: const Color(0xFF1A1A1A)),
+        ),
+      );
+    } else {
+      bgWidget = Image.asset(
+        'assets/images/back.png',
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(color: const Color(0xFF1A1A1A)),
+      );
+    }
+
     return Stack(children: [
-      SizedBox(
-          width: double.infinity,
-          height: 420,
-          child: Image.asset('assets/images/back.png',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  Container(color: const Color(0xFF1A1A1A)))),
+      SizedBox(width: double.infinity, height: 420, child: bgWidget),
       Container(height: 420, color: Colors.black.withOpacity(0.5)),
       SizedBox(
           height: 420,
           child: Column(children: [
             Expanded(
                 child: Center(
-                    child: heroImage != null && heroImage.isNotEmpty
-                        ? Image.network(heroImage,
-                            height: 200,
-                            errorBuilder: (_, __, ___) => const SizedBox())
-                        : Image.asset('assets/images/hero.png',
-                            height: 200,
-                            errorBuilder: (_, __, ___) => const SizedBox()))),
+                    child: _loading
+                        ? const CircularProgressIndicator(
+                            color: AppTheme.primary)
+                        : heroImage != null && heroImage.isNotEmpty
+                            ? Image.network(heroImage,
+                                height: 200,
+                                errorBuilder: (_, __, ___) => Image.asset(
+                                    'assets/images/hero.png',
+                                    height: 200,
+                                    errorBuilder: (_, __, ___) =>
+                                        const SizedBox()))
+                            : Image.asset('assets/images/hero.png',
+                                height: 200,
+                                errorBuilder: (_, __, ___) =>
+                                    const SizedBox()))),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
               child: Column(

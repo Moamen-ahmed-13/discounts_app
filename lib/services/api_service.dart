@@ -105,7 +105,8 @@ class ApiService {
         .timeout(const Duration(seconds: 15));
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
-      final list = data is List ? data : (data['data'] ?? data['coupons'] ?? []);
+      final list =
+          data is List ? data : (data['data'] ?? data['coupons'] ?? []);
       return (list as List).map((e) => Coupon.fromJson(e)).toList();
     }
     throw Exception('fetchCoupons($type) failed (${res.statusCode})');
@@ -140,6 +141,18 @@ class ApiService {
     return {};
   }
 
+  // ─── /api/footer ─────────────────────────────────────────────────
+  static Future<FooterData> fetchFooter() async {
+    final res = await http
+        .get(Uri.parse('$baseUrl/api/footer'), headers: _headers)
+        .timeout(const Duration(seconds: 10));
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      return FooterData.fromJson(data is Map ? (data['data'] ?? data) : {});
+    }
+    throw Exception('fetchFooter failed (${res.statusCode})');
+  }
+
   // ─── Newsletter Subscribe ─────────────────────────────────────────
   // ✅ الـ API بتستخدم form-data (multipart) مش JSON
   static Future<bool> subscribeNewsletter(String email) async {
@@ -158,7 +171,8 @@ class ApiService {
     try {
       final data = jsonDecode(res.body);
       final msg = data['message']?.toString() ?? '';
-      throw Exception(msg.isNotEmpty ? msg : 'فشل الاشتراك (${res.statusCode})');
+      throw Exception(
+          msg.isNotEmpty ? msg : 'فشل الاشتراك (${res.statusCode})');
     } catch (_) {
       throw Exception('فشل الاشتراك (${res.statusCode})');
     }
