@@ -241,7 +241,9 @@ import '../theme.dart';
 
 class ApiCouponCard extends StatefulWidget {
   final Coupon coupon;
-  const ApiCouponCard({super.key, required this.coupon});
+  final int index;
+  final int totalItems;
+  const ApiCouponCard({super.key, required this.coupon, required this.index, required this.totalItems});
   @override
   State<ApiCouponCard> createState() => _ApiCouponCardState();
 }
@@ -330,165 +332,191 @@ class _ApiCouponCardState extends State<ApiCouponCard>
   @override
   Widget build(BuildContext context) {
     final sw = MediaQuery.of(context).size.width;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: AppTheme.background,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 4))
-        ],
-        border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Expanded(
-                flex: 3,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 3),
-                        decoration: BoxDecoration(
-                            color: badgeColor,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Text(widget.coupon.badge,
-                            style: TextStyle(
-                                color: badgeTextColor,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Cairo')),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(widget.coupon.title,
-                          style: const TextStyle(
-                              fontSize: 14,
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        ValueNotifier(widget.index),
+        ValueNotifier(widget.totalItems),
+      ]),
+      builder: (context, child) {
+        final animation = Tween<double>(
+          begin: 0.9,
+          end: 1.0,
+        ).animate(
+          CurvedAnimation(
+            parent: AlwaysStoppedAnimation<double>(
+              (widget.index / widget.totalItems) * 0.4 + 0.6,
+            ),
+            curve: Curves.easeInOut,
+          ),
+        );
+
+        return AppTheme.animatedSlideFadeIn(
+          child: child!,
+          animation: animation,
+          offset: 25,
+          direction: AxisDirection.up,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: AppTheme.background,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 4))
+          ],
+          border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              Expanded(
+                  flex: 3,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                              color: badgeColor,
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Text(widget.coupon.badge,
+                              style: TextStyle(
+                                  color: badgeTextColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Cairo')),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(widget.coupon.title,
+                            style: AppTheme.tajawal(
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.textPrimary,
-                              fontFamily: 'Cairo')),
-                      const SizedBox(height: 4),
-                      if (widget.coupon.expiryText.isNotEmpty)
-                        Row(children: [
-                          const Icon(Icons.access_time,
-                              size: 12, color: AppTheme.textSecondaryinWhite),
-                          const SizedBox(width: 4),
-                          Text(widget.coupon.expiryText,
-                              style: const TextStyle(
+                            )),
+                        const SizedBox(height: 4),
+                        if (widget.coupon.expiryText.isNotEmpty)
+                          Row(children: [
+                            const Icon(Icons.access_time,
+                                size: 12, color: AppTheme.textSecondaryinWhite),
+                            const SizedBox(width: 4),
+                            Text(widget.coupon.expiryText,
+                                style: AppTheme.tajawal(
                                   fontSize: 11,
                                   color: AppTheme.textSecondaryinWhite,
-                                  fontFamily: 'Cairo')),
-                        ]),
-                      const SizedBox(height: 14),
-                      AnimatedBuilder(
-                        animation: _blurAnim,
-                        builder: (context, _) =>
-                            Stack(alignment: Alignment.center, children: [
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F5),
+                                )),
+                          ]),
+                        const SizedBox(height: 14),
+                        AnimatedBuilder(
+                          animation: _blurAnim,
+                          builder: (context, _) =>
+                              Stack(alignment: Alignment.center, children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                  color: const Color(0xFFF5F5F5),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border:
+                                      Border.all(color: const Color(0xFFE0E0E0))),
+                              child: Text(widget.coupon.code,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textPrimary,
+                                      letterSpacing: 2,
+                                      fontFamily: 'Cairo'),
+                                  textAlign: TextAlign.center),
+                            ),
+                            if (!_revealed || _blurAnim.value > 0)
+                              ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                border:
-                                    Border.all(color: const Color(0xFFE0E0E0))),
-                            child: Text(widget.coupon.code,
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.textPrimary,
-                                    letterSpacing: 2,
-                                    fontFamily: 'Cairo'),
-                                textAlign: TextAlign.center),
-                          ),
-                          if (!_revealed || _blurAnim.value > 0)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(
-                                    sigmaX: _blurAnim.value,
-                                    sigmaY: _blurAnim.value),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                      sigmaX: _blurAnim.value,
+                                      sigmaY: _blurAnim.value),
+                                  child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
+                                      color: Colors.white
+                                          .withOpacity(_revealed ? 0 : 0.6)),
+                                ),
+                              ),
+                            if (!_revealed)
+                              GestureDetector(
+                                onTap: _revealAndOpen,
                                 child: Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 10),
-                                    color: Colors.white
-                                        .withOpacity(_revealed ? 0 : 0.6)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 8),
+                                  decoration: BoxDecoration(
+                                      color: AppTheme.primary,
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color:
+                                                AppTheme.primary.withOpacity(0.4),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3))
+                                      ]),
+                                  child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.copy,
+                                            color: Colors.white, size: 14),
+                                        SizedBox(width: 6),
+                                        Text('نسخ الكود',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'Cairo')),
+                                      ]),
+                                ),
                               ),
-                            ),
-                          if (!_revealed)
-                            GestureDetector(
-                              onTap: _revealAndOpen,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                    color: AppTheme.primary,
-                                    borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          color:
-                                              AppTheme.primary.withOpacity(0.4),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 3))
-                                    ]),
-                                child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.copy,
-                                          color: Colors.white, size: 14),
-                                      SizedBox(width: 6),
-                                      Text('نسخ الكود',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              fontFamily: 'Cairo')),
-                                    ]),
-                              ),
-                            ),
-                        ]),
-                      ),
-                      if (_revealed) ...[
-                        const SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () async {
-                            try {
-                              await launchUrl(Uri.parse(widget.coupon.storeUrl),
-                                  mode: LaunchMode.externalApplication);
-                            } catch (_) {}
-                          },
-                          child: Row(mainAxisSize: MainAxisSize.min, children: [
-                            const Icon(Icons.open_in_new,
-                                size: 13, color: AppTheme.textSecondaryinWhite),
-                            const SizedBox(width: 4),
-                            Text('زيارة المتجر',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppTheme.textSecondaryinWhite,
-                                    fontFamily: 'Cairo',
-                                    decoration: TextDecoration.underline,
-                                    decorationColor:
-                                        AppTheme.textSecondaryinWhite)),
                           ]),
                         ),
-                      ],
-                    ])),
-            const SizedBox(width: 12),
-            SizedBox(
-                width: sw * 0.28,
-                height: sw * 0.28,
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: _buildLogo())),
-          ]),
+                        if (_revealed) ...[
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () async {
+                              try {
+                                await launchUrl(Uri.parse(widget.coupon.storeUrl),
+                                    mode: LaunchMode.externalApplication);
+                              } catch (_) {}
+                            },
+                            child: Row(mainAxisSize: MainAxisSize.min, children: [
+                              const Icon(Icons.open_in_new,
+                                  size: 13, color: AppTheme.textSecondaryinWhite),
+                              const SizedBox(width: 4),
+                              Text('زيارة المتجر',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.textSecondaryinWhite,
+                                      fontFamily: 'Cairo',
+                                      decoration: TextDecoration.underline,
+                                      decorationColor:
+                                          AppTheme.textSecondaryinWhite)),
+                            ]),
+                          ),
+                        ],
+                      ])),
+              const SizedBox(width: 12),
+              SizedBox(
+                  width: sw * 0.28,
+                  height: sw * 0.28,
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: _buildLogo())),
+            ]),
+          ),
         ),
       ),
     );

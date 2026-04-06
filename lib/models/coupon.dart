@@ -14,6 +14,7 @@ class Coupon {
   final String storeUrl;
   final int discountPercent;
   final String category;
+  final String country;
 
   Coupon({
     required this.id,
@@ -28,6 +29,7 @@ class Coupon {
     required this.storeUrl,
     required this.discountPercent,
     required this.category,
+    this.country = '',
   });
 
   factory Coupon.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,7 @@ class Coupon {
       storeUrl: storeUrl,
       discountPercent: discountPercent,
       category: store?['category']?.toString() ?? 'عام',
+      country: json['country']?.toString() ?? store?['country']?.toString() ?? '',
     );
   }
 }

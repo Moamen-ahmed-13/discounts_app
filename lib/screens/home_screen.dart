@@ -221,7 +221,11 @@ class _HomeScreenState extends State<HomeScreen> {
             c.code.contains(_searchQuery);
         final matchCompany = _filterOptions.company == 'جميع الشركات' ||
             c.storeName == _filterOptions.company;
-        return matchSearch && matchCompany;
+        final matchCountry = _filterOptions.country == 'جميع الدول' ||
+            c.country == _filterOptions.country;
+        final matchDuration = _filterOptions.duration == 'جميع المدد' ||
+            c.expiryText == _filterOptions.duration;
+        return matchSearch && matchCompany && matchCountry && matchDuration;
       }).toList();
 
   List<Coupon> get visibleCoupons =>
@@ -478,43 +482,47 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Stack(children: [
-      SizedBox(width: double.infinity, height: 420, child: bgWidget),
-      Container(height: 420, color: Colors.black.withOpacity(0.5)),
+      SizedBox(width: double.infinity, height: 320, child: bgWidget),
+      Container(height: 320, color: Colors.black.withOpacity(0.5)),
       SizedBox(
-          height: 420,
-          child: Column(children: [
-            Expanded(
-                child: Center(
-                    child: _loading
-                        ? const CircularProgressIndicator(
-                            color: AppTheme.primary)
-                        : heroImage != null && heroImage.isNotEmpty
-                            ? Image.network(heroImage,
-                                height: 200,
-                                errorBuilder: (_, __, ___) => Image.asset(
-                                    'assets/images/hero.png',
-                                    height: 200,
-                                    errorBuilder: (_, __, ___) =>
-                                        const SizedBox()))
-                            : Image.asset('assets/images/hero.png',
-                                height: 200,
-                                errorBuilder: (_, __, ___) =>
-                                    const SizedBox()))),
+          height: 320,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            // Expanded(
+            // child: Center(
+            //     child: _loading
+            //         ? const CircularProgressIndicator(
+            //             color: AppTheme.primary)
+            //         : heroImage != null && heroImage.isNotEmpty
+            //             ? Image.network(heroImage,
+            //                 height: 200,
+            //                 errorBuilder: (_, __, ___) => Image.asset(
+            //                     'assets/images/hero.png',
+            //                     height: 200,
+            //                     errorBuilder: (_, __, ___) =>
+            //                         const SizedBox()))
+            //             : Image.asset('assets/images/hero.png',
+            //                 height: 200,
+            //                 errorBuilder: (_, __, ___) =>
+            //                     const SizedBox()))),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 100, 20, 24),
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(title,
                         style: AppTheme.tajawal(
                             color: Colors.white,
                             fontSize: 22,
                             fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(desc,
-                        style: AppTheme.tajawal(
-                            color: Colors.white60, fontSize: 12, height: 1.5)),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 15),
+                    Text(
+                      desc,
+                      style: AppTheme.tajawal(
+                          color: Colors.white60, fontSize: 12, height: 1.5),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 30),
                     TextField(
                       cursorColor: AppTheme.primary,
                       controller: _searchController,
@@ -687,11 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (subtitle.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(subtitle,
-                style: AppTheme.tajawal(
-                    fontSize: 12,
-                    color: isRed
-                        ? AppTheme.primary
-                        : AppTheme.textSecondaryinWhite)),
+                style: AppTheme.tajawal(fontSize: 12, color: AppTheme.primary)),
           ],
         ]),
       );
@@ -704,7 +708,11 @@ class _HomeScreenState extends State<HomeScreen> {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: _stores.length,
-          itemBuilder: (context, i) => StoreItem(store: _stores[i]),
+          itemBuilder: (context, i) => StoreItem(
+            store: _stores[i],
+            index: i,
+            totalItems: _stores.length,
+          ),
         ));
   }
 
@@ -772,7 +780,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(children: [
-        ...visibleCoupons.map((c) => ApiCouponCard(coupon: c)),
+        ...visibleCoupons.asMap().entries.map((entry) {
+          final i = entry.key;
+          final c = entry.value;
+          return ApiCouponCard(
+            coupon: c,
+            index: i,
+            totalItems: visibleCoupons.length,
+          );
+        }),
         if (hasMore) ...[
           const SizedBox(height: 8),
           GestureDetector(
@@ -978,9 +994,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-              border: Border(
-                  top: BorderSide(color: Colors.white.withOpacity(0.1)))),
           child: Text('© 2026 كوبوني . جميع الحقوق محفوظة.',
               style: AppTheme.tajawal(
                   color: AppTheme.textSecondaryinBlack, fontSize: 11),
@@ -988,9 +1001,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-              border: Border(
-                  top: BorderSide(color: Colors.white.withOpacity(0.1)))),
           child: Text('تم التصميم والتطوير بواسطة',
               style: AppTheme.tajawal(
                   color: AppTheme.textSecondaryinBlack, fontSize: 11),

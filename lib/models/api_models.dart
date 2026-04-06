@@ -187,7 +187,7 @@ class HeroData {
           json['image_url']?.toString() ??
           json['hero_image']?.toString(),
       // الخلفية (رفع الصورة الخلفية)
-      bgImageUrl: json['bg_image']?.toString() ??
+      bgImageUrl: json['background_url']?.toString() ??
           json['background_image']?.toString() ??
           json['background']?.toString(),
       // الشريط العلوي - الداشبورد: announcements[]

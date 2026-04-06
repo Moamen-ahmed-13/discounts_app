@@ -73,8 +73,8 @@ class AppTheme {
   static const Color accent = Color(0xFF00C853);
 
   static const Color textPrimary = Colors.black;
-  static const Color textSecondaryinBlack = Color(0xFF9E9E9E);
-  static const Color textSecondaryinWhite = Color(0xFF545353);
+  static const Color textSecondaryinBlack = Color.fromARGB(190, 158, 158, 158);
+  static const Color textSecondaryinWhite = Color.fromARGB(213, 84, 83, 83);
   static const Color divider = Color(0xFF2A2A2A);
 
   static const Map<String, Color> badgeColors = {
@@ -91,51 +91,52 @@ class AppTheme {
     'عرض خاص': Color(0xFFFFFFFF),
   };
 
-  static TextTheme get _tajawalTextTheme => GoogleFonts.tajawalTextTheme().copyWith(
-    bodyLarge: GoogleFonts.tajawal(),
-    bodyMedium: GoogleFonts.tajawal(),
-    bodySmall: GoogleFonts.tajawal(),
-    displayLarge: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
-    displayMedium: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
-    titleLarge: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
-    titleMedium: GoogleFonts.tajawal(fontWeight: FontWeight.w600),
-    labelLarge: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
-  );
+  static TextTheme get _tajawalTextTheme =>
+      GoogleFonts.tajawalTextTheme().copyWith(
+        bodyLarge: GoogleFonts.tajawal(),
+        bodyMedium: GoogleFonts.tajawal(),
+        bodySmall: GoogleFonts.tajawal(),
+        displayLarge: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
+        displayMedium: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
+        titleLarge: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
+        titleMedium: GoogleFonts.tajawal(fontWeight: FontWeight.w600),
+        labelLarge: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
+      );
 
   static ThemeData get theme => ThemeData(
-    brightness: Brightness.light,
-    textTheme: _tajawalTextTheme,
-    colorScheme: const ColorScheme.light(
-      primary: primary,
-      secondary: secondary,
-      surface: background,
-    ),
-    scaffoldBackgroundColor: background,
-    appBarTheme: AppBarTheme(
-      backgroundColor: background,
-      foregroundColor: textPrimary,
-      elevation: 0,
-      centerTitle: false,
-      titleTextStyle: GoogleFonts.tajawal(
-        color: textPrimary,
-        fontWeight: FontWeight.bold,
-        fontSize: 18,
-      ),
-    ),
-    cardTheme: CardThemeData(
-      color: Colors.white,
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
-      ),
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      hintStyle: GoogleFonts.tajawal(color: Colors.grey),
-    ),
-    useMaterial3: true,
-  );
+        brightness: Brightness.light,
+        textTheme: _tajawalTextTheme,
+        colorScheme: const ColorScheme.light(
+          primary: primary,
+          secondary: secondary,
+          surface: background,
+        ),
+        scaffoldBackgroundColor: background,
+        appBarTheme: AppBarTheme(
+          backgroundColor: background,
+          foregroundColor: textPrimary,
+          elevation: 0,
+          centerTitle: false,
+          titleTextStyle: GoogleFonts.tajawal(
+            color: textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        cardTheme: CardThemeData(
+          color: Colors.white,
+          elevation: 2,
+          shadowColor: Colors.black.withOpacity(0.08),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          hintStyle: GoogleFonts.tajawal(color: Colors.grey),
+        ),
+        useMaterial3: true,
+      );
 
   // Helper للحصول على TextStyle بفونت تجوال
   static TextStyle tajawal({
@@ -152,4 +153,88 @@ class AppTheme {
         height: height,
         letterSpacing: letterSpacing,
       );
+
+  // Animation helpers
+  static const Duration defaultDuration = Duration(milliseconds: 300);
+  static const Curve defaultCurve = Curves.easeInOut;
+
+  static Widget animatedSlideIn({
+    required Widget child,
+    required Animation<double> animation,
+    double offset = 30,
+    AxisDirection direction = AxisDirection.up,
+  }) {
+    final double dx = direction == AxisDirection.left
+        ? -offset
+        : direction == AxisDirection.right
+            ? offset
+            : 0;
+    final double dy = direction == AxisDirection.up
+        ? -offset
+        : direction == AxisDirection.down
+            ? offset
+            : 0;
+
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: Offset(dx / 100, dy / 100),
+        end: Offset.zero,
+      ).animate(animation),
+      child: child,
+    );
+  }
+
+  static Widget animatedFadeIn({
+    required Widget child,
+    required Animation<double> animation,
+  }) {
+    return FadeTransition(
+      opacity: animation,
+      child: child,
+    );
+  }
+
+  static Widget animatedScaleIn({
+    required Widget child,
+    required Animation<double> animation,
+    double minScale = 0.9,
+  }) {
+    return ScaleTransition(
+      scale: Tween<double>(begin: minScale, end: 1.0).animate(animation),
+      child: child,
+    );
+  }
+
+  static Widget animatedSlideFadeIn({
+    required Widget child,
+    required Animation<double> animation,
+    double offset = 20,
+    AxisDirection direction = AxisDirection.up,
+  }) {
+    final double dx = direction == AxisDirection.left
+        ? -offset
+        : direction == AxisDirection.right
+            ? offset
+            : 0;
+    final double dy = direction == AxisDirection.up
+        ? -offset
+        : direction == AxisDirection.down
+            ? offset
+            : 0;
+
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final double t = animation.value;
+        return Transform.translate(
+          offset: Offset(dx * (1 - t), dy * (1 - t)),
+          child: Opacity(
+            opacity: t,
+            child: child,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
 }

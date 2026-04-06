@@ -6,7 +6,10 @@ import '../theme.dart';
 class StoreItem extends StatelessWidget {
   final Store store;
   final VoidCallback? onTap;
-  const StoreItem({super.key, required this.store, this.onTap});
+  final int index;
+  final int totalItems;
+
+  const StoreItem({super.key, required this.store, this.onTap, required this.index, required this.totalItems});
 
   bool get _isLocal => !store.logoUrl.startsWith('http');
 
@@ -36,40 +39,66 @@ class StoreItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 85,
-        margin: const EdgeInsets.only(left: 10),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: AppTheme.background,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 2))
-          ],
-        ),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Container(
-            width: 50,
-            height: 36,
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(6)),
-            padding: const EdgeInsets.all(4),
-            child: _buildLogo(),
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        ValueNotifier(index),
+        ValueNotifier(totalItems),
+      ]),
+      builder: (context, child) {
+        final animation = Tween<double>(
+          begin: 0.9,
+          end: 1.0,
+        ).animate(
+          CurvedAnimation(
+            parent: AlwaysStoppedAnimation<double>(
+              (index / totalItems) * 0.3 + 0.7,
+            ),
+            curve: Curves.easeInOut,
           ),
-          const SizedBox(height: 6),
-          Text(store.name,
-              style:
-                  AppTheme.tajawal(fontSize: 11, color: AppTheme.textPrimary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center),
-        ]),
+        );
+
+        return AppTheme.animatedSlideFadeIn(
+          child: child!,
+          animation: animation,
+          offset: 20,
+          direction: AxisDirection.up,
+        );
+      },
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 85,
+          margin: const EdgeInsets.only(left: 10),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+          decoration: BoxDecoration(
+            color: AppTheme.background,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2))
+            ],
+          ),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(
+              width: 50,
+              height: 36,
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(6)),
+              padding: const EdgeInsets.all(4),
+              child: _buildLogo(),
+            ),
+            const SizedBox(height: 6),
+            Text(store.name,
+                style:
+                    AppTheme.tajawal(fontSize: 11, color: AppTheme.textPrimary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center),
+          ]),
+        ),
       ),
     );
   }
