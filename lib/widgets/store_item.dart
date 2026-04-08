@@ -9,7 +9,12 @@ class StoreItem extends StatelessWidget {
   final int index;
   final int totalItems;
 
-  const StoreItem({super.key, required this.store, this.onTap, required this.index, required this.totalItems});
+  const StoreItem(
+      {super.key,
+      required this.store,
+      this.onTap,
+      required this.index,
+      required this.totalItems});
 
   bool get _isLocal => !store.logoUrl.startsWith('http');
 
@@ -68,7 +73,10 @@ class StoreItem extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: 85,
-          margin: const EdgeInsets.only(left: 10),
+          height: 85,
+          margin: const EdgeInsets.only(
+            left: 10,
+          ),
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
           decoration: BoxDecoration(
             color: AppTheme.background,
@@ -76,9 +84,9 @@ class StoreItem extends StatelessWidget {
             border: Border.all(color: const Color(0xFFE0E0E0)),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2))
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4))
             ],
           ),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [

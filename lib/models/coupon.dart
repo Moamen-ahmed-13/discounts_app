@@ -39,13 +39,16 @@ class Coupon {
     final storeLogo = store?['logo_url']?.toString() ?? '';
 
     // ✅ صورة الكوبون من card_image أو image_url
-    final couponImage = json['card_image']?.toString() ?? json['image_url']?.toString() ?? '';
+    final couponImage =
+        json['card_image']?.toString() ?? json['image_url']?.toString() ?? '';
 
     // ✅ رابط المتجر من store.url أو link
-    final storeUrl = store?['url']?.toString() ?? json['link']?.toString() ?? '';
+    final storeUrl =
+        store?['url']?.toString() ?? json['link']?.toString() ?? '';
 
     // ✅ نسبة الخصم من discount (string مثل "20%")
-    final discountRaw = (json['discount'] ?? '0').toString().replaceAll('%', '').trim();
+    final discountRaw =
+        (json['discount'] ?? '0').toString().replaceAll('%', '').trim();
     final discountPercent = int.tryParse(discountRaw) ?? 0;
 
     return Coupon(
@@ -61,7 +64,9 @@ class Coupon {
       storeUrl: storeUrl,
       discountPercent: discountPercent,
       category: store?['category']?.toString() ?? 'عام',
-      country: json['country']?.toString() ?? store?['country']?.toString() ?? '',
+      country: json['country_label']?.toString() ??
+          store?['country']?.toString() ??
+          '',
     );
   }
 }

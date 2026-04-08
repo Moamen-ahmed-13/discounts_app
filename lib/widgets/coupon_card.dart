@@ -243,7 +243,11 @@ class ApiCouponCard extends StatefulWidget {
   final Coupon coupon;
   final int index;
   final int totalItems;
-  const ApiCouponCard({super.key, required this.coupon, required this.index, required this.totalItems});
+  const ApiCouponCard(
+      {super.key,
+      required this.coupon,
+      required this.index,
+      required this.totalItems});
   @override
   State<ApiCouponCard> createState() => _ApiCouponCardState();
 }
@@ -306,7 +310,7 @@ class _ApiCouponCardState extends State<ApiCouponCard>
 
   Widget _buildLogo() {
     final url = widget.coupon.storeLogo;
-    if (url.isEmpty)
+    if (url.isEmpty) {
       return Center(
           child: Text(widget.coupon.storeName,
               style: const TextStyle(
@@ -315,6 +319,7 @@ class _ApiCouponCardState extends State<ApiCouponCard>
                   color: Colors.black,
                   fontSize: 12),
               textAlign: TextAlign.center));
+    }
     return CachedNetworkImage(
         imageUrl: url,
         fit: BoxFit.contain,
@@ -374,7 +379,8 @@ class _ApiCouponCardState extends State<ApiCouponCard>
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(14),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            child:
+                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
               Expanded(
                   flex: 3,
                   child: Column(
@@ -401,17 +407,33 @@ class _ApiCouponCardState extends State<ApiCouponCard>
                               color: AppTheme.textPrimary,
                             )),
                         const SizedBox(height: 4),
-                        if (widget.coupon.expiryText.isNotEmpty)
-                          Row(children: [
+                        const SizedBox(height: 6),
+                        // ─── الدولة + المدة (زي الموقع) ───────────
+                        Row(children: [
+                          if (widget.coupon.country.isNotEmpty) ...[
+                            const Icon(Icons.language,
+                                size: 12, color: AppTheme.textSecondaryinWhite),
+                            const SizedBox(width: 3),
+                            Text(widget.coupon.country,
+                                style: AppTheme.tajawal(
+                                    fontSize: 11,
+                                    color: AppTheme.textSecondaryinWhite)),
+                            if (widget.coupon.expiryText.isNotEmpty)
+                              const SizedBox(width: 12),
+                          ],
+                          if (widget.coupon.expiryText.isNotEmpty) ...[
                             const Icon(Icons.access_time,
                                 size: 12, color: AppTheme.textSecondaryinWhite),
-                            const SizedBox(width: 4),
-                            Text(widget.coupon.expiryText,
-                                style: AppTheme.tajawal(
-                                  fontSize: 11,
-                                  color: AppTheme.textSecondaryinWhite,
-                                )),
-                          ]),
+                            const SizedBox(width: 3),
+                            Flexible(
+                              child: Text(widget.coupon.expiryText,
+                                  style: AppTheme.tajawal(
+                                      fontSize: 11,
+                                      color: AppTheme.textSecondaryinWhite),
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                          ],
+                        ]),
                         const SizedBox(height: 14),
                         AnimatedBuilder(
                           animation: _blurAnim,
@@ -424,8 +446,8 @@ class _ApiCouponCardState extends State<ApiCouponCard>
                               decoration: BoxDecoration(
                                   color: const Color(0xFFF5F5F5),
                                   borderRadius: BorderRadius.circular(10),
-                                  border:
-                                      Border.all(color: const Color(0xFFE0E0E0))),
+                                  border: Border.all(
+                                      color: const Color(0xFFE0E0E0))),
                               child: Text(widget.coupon.code,
                                   style: const TextStyle(
                                       fontSize: 16,
@@ -461,8 +483,8 @@ class _ApiCouponCardState extends State<ApiCouponCard>
                                       borderRadius: BorderRadius.circular(8),
                                       boxShadow: [
                                         BoxShadow(
-                                            color:
-                                                AppTheme.primary.withOpacity(0.4),
+                                            color: AppTheme.primary
+                                                .withOpacity(0.4),
                                             blurRadius: 8,
                                             offset: const Offset(0, 3))
                                       ]),
@@ -488,13 +510,16 @@ class _ApiCouponCardState extends State<ApiCouponCard>
                           GestureDetector(
                             onTap: () async {
                               try {
-                                await launchUrl(Uri.parse(widget.coupon.storeUrl),
+                                await launchUrl(
+                                    Uri.parse(widget.coupon.storeUrl),
                                     mode: LaunchMode.externalApplication);
                               } catch (_) {}
                             },
-                            child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
                               const Icon(Icons.open_in_new,
-                                  size: 13, color: AppTheme.textSecondaryinWhite),
+                                  size: 13,
+                                  color: AppTheme.textSecondaryinWhite),
                               const SizedBox(width: 4),
                               Text('زيارة المتجر',
                                   style: TextStyle(

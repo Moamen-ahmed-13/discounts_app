@@ -17,6 +17,8 @@ dependencies:
   font_awesome_flutter: ^11.0.0
   google_fonts: ^8.0.2
   http: ^1.2.0
+  motion: ^2.0.2
+  show_up_animation: ^2.1.2
   url_launcher: ^6.3.2
 
 dev_dependencies:

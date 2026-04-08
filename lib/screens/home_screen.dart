@@ -78,6 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
   static const int _loopMultiplier = 1000;
   late final PageController _pageController;
   Timer? _autoScrollTimer;
+  // ─── Stores auto-scroll ────────────────────────────────────────────
+  final ScrollController _storesScrollController = ScrollController();
+  Timer? _storesScrollTimer;
 
   @override
   void initState() {
@@ -88,6 +91,22 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(
             () => _bannerIndex = (_bannerIndex + 1) % _bannerMessages.length);
+      }
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startStoresScroll());
+  }
+
+  void _startStoresScroll() {
+    _storesScrollTimer?.cancel();
+    _storesScrollTimer = Timer.periodic(const Duration(milliseconds: 30), (_) {
+      if (!mounted || !_storesScrollController.hasClients) return;
+      final max = _storesScrollController.position.maxScrollExtent;
+      final current = _storesScrollController.offset;
+      // لما يوصل للنص الثاني من الـ loop يرجع للنص الأول بدون animation
+      if (current >= max * 0.66) {
+        _storesScrollController.jumpTo(max * 0.33);
+      } else {
+        _storesScrollController.jumpTo(current + 2);
       }
     });
   }
@@ -173,6 +192,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
     if (_offerStores.isNotEmpty) _initSlider();
+    // أعد تشغيل الـ stores scroll بعد تحميل البيانات
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startStoresScroll());
   }
 
   void _initSlider() {
@@ -198,6 +219,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _bannerTimer?.cancel();
     _autoScrollTimer?.cancel();
+    _storesScrollTimer?.cancel();
+    _storesScrollController.dispose();
     _pageController.dispose();
     _searchController.dispose();
     _emailController.dispose();
@@ -221,11 +244,24 @@ class _HomeScreenState extends State<HomeScreen> {
             c.code.contains(_searchQuery);
         final matchCompany = _filterOptions.company == 'جميع الشركات' ||
             c.storeName == _filterOptions.company;
-        final matchCountry = _filterOptions.country == 'جميع الدول' ||
-            c.country == _filterOptions.country;
+        // ✅ فلتر الفئة
+        final matchCategory = _filterOptions.category == 'الكل' ||
+            c.category == _filterOptions.category;
+        // ✅ فلتر الدولة
+        final matchCountry = _filterOptions.country == 'جميع الدول'
+            ? true
+            : c.country
+                .toLowerCase()
+                .contains(_filterOptions.country.toLowerCase());
+
+        // ✅ فلتر المدة
         final matchDuration = _filterOptions.duration == 'جميع المدد' ||
             c.expiryText == _filterOptions.duration;
-        return matchSearch && matchCompany && matchCountry && matchDuration;
+        return matchSearch &&
+            matchCompany &&
+            matchCategory &&
+            matchCountry &&
+            matchDuration;
       }).toList();
 
   List<Coupon> get visibleCoupons =>
@@ -233,18 +269,22 @@ class _HomeScreenState extends State<HomeScreen> {
   bool get hasMore => _visibleCount < filteredCoupons.length;
 
   void _openFilter() async {
-    // استخدم /api/stores/for-filters إذا متاح، وإلا استخدم أسماء المتاجر
     final companies = _filterStores.isNotEmpty
         ? ['جميع الشركات', ..._filterStores]
         : ['جميع الشركات', ..._stores.map((s) => s.name)];
-
-    // استخدم /api/labels للدول والمدد إذا متاح
     final countries = _labels?.countries.isNotEmpty == true
         ? ['جميع الدول', ..._labels!.countries]
         : null;
     final durations = _labels?.durations.isNotEmpty == true
         ? ['جميع المدد', ..._labels!.durations]
         : null;
+    // ✅ الفئات من الكوبونات الحقيقية
+    final cats = _coupons
+        .map((c) => c.category)
+        .where((c) => c.isNotEmpty)
+        .toSet()
+        .toList();
+    final categories = ['الكل', ...cats];
 
     final result = await showModalBottomSheet<FilterOptions>(
       context: context,
@@ -255,6 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
         companies: companies,
         countries: countries,
         durations: durations,
+        categories: categories, // ✅ جديد
       ),
     );
     if (result != null) {
@@ -702,18 +743,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildStoresList() {
     if (_stores.isEmpty) return const SizedBox();
+    // loop المتاجر عشان تكون infinite
+    final looped = [..._stores, ..._stores, ..._stores];
     return SizedBox(
-        height: 100,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: _stores.length,
-          itemBuilder: (context, i) => StoreItem(
-            store: _stores[i],
-            index: i,
-            totalItems: _stores.length,
-          ),
-        ));
+      height: 90,
+      child: ListView.builder(
+        controller: _storesScrollController,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: looped.length,
+        itemBuilder: (context, i) => StoreItem(
+          store: looped[i],
+          index: i % _stores.length,
+          totalItems: _stores.length,
+        ),
+      ),
+    );
   }
 
   Widget _buildCouponsHeader() => Padding(
