@@ -1,55 +1,46 @@
-// lib/widgets/filter_sheet.dart
-
 import 'package:flutter/material.dart';
 import '../theme.dart';
 
 class FilterOptions {
-  String duration;
   String company;
   String country;
   String category;
 
   FilterOptions({
-    this.duration = 'جميع المدد',
     this.company = 'جميع الشركات',
     this.country = 'جميع الدول',
-    this.category = 'الكل',
+    this.category = 'جميع الفئات',
   });
 
   FilterOptions copyWith({
-    String? duration,
     String? company,
     String? country,
     String? category,
   }) =>
       FilterOptions(
-        duration: duration ?? this.duration,
         company: company ?? this.company,
         country: country ?? this.country,
         category: category ?? this.category,
       );
 
   bool get isDefault =>
-      duration == 'جميع المدد' &&
       company == 'جميع الشركات' &&
       country == 'جميع الدول' &&
-      category == 'الكل';
+      category == 'جميع الفئات';
 }
 
 class FilterSheet extends StatefulWidget {
   final FilterOptions current;
   final List<String> companies;
   final List<String>? countries;
-  final List<String>? durations;
   final List<String>? categories;
 
   const FilterSheet({
     super.key,
     required this.current,
     this.companies = const ['جميع الشركات'],
-    this.countries,
-    this.durations,
-    this.categories,
+    this.countries = const ['جميع الدول'],
+    this.categories = const ['جميع الفئات'],
   });
 
   @override
@@ -59,13 +50,7 @@ class FilterSheet extends StatefulWidget {
 class _FilterSheetState extends State<FilterSheet> {
   late FilterOptions _options;
 
-  static const List<String> _defaultDurations = [
-    'جميع المدد',
-    'ينتهي اليوم',
-    'ينتهي خلال 3 أيام',
-    'ينتهي خلال أسبوع',
-    'ينتهي خلال شهر',
-  ];
+  // fallback لو API مبعتش
   static const List<String> _defaultCountries = [
     'جميع الدول',
     'مصر',
@@ -75,18 +60,21 @@ class _FilterSheetState extends State<FilterSheet> {
     'قطر',
     'دولي'
   ];
-  static const List<String> _defaultCategories = [
-    'الكل',
-    'عام',
-    'إلكترونيات',
-    'ملابس',
-    'أحذية',
-    'كتب',
-  ];
 
-  List<String> get _durations => widget.durations ?? _defaultDurations;
+  static const List<String> _defaultCategories = [
+    'جميع الفئات',
+    "أزياء",
+    "إلكترونيات",
+    "جمال",
+    "رياضة",
+    "طعام",
+    "أخرى",
+  ];
   List<String> get _countries => widget.countries ?? _defaultCountries;
-  List<String> get _categories => widget.categories ?? _defaultCategories;
+  List<String> get _categories =>
+      (widget.categories != null && widget.categories!.isNotEmpty)
+          ? widget.categories!
+          : _defaultCategories;
   List<String> get _companies {
     final list = widget.companies.toList();
     if (!list.contains('جميع الشركات')) list.insert(0, 'جميع الشركات');
@@ -97,7 +85,6 @@ class _FilterSheetState extends State<FilterSheet> {
   void initState() {
     super.initState();
     _options = FilterOptions(
-      duration: widget.current.duration,
       company: widget.current.company,
       country: widget.current.country,
       category: widget.current.category,
@@ -124,7 +111,9 @@ class _FilterSheetState extends State<FilterSheet> {
                     decoration: BoxDecoration(
                         color: const Color(0xFFE0E0E0),
                         borderRadius: BorderRadius.circular(2)))),
+
             const SizedBox(height: 16),
+
             Row(children: [
               Text('🏷️  فلترة الكوبونات',
                   style: AppTheme.tajawal(
@@ -134,37 +123,42 @@ class _FilterSheetState extends State<FilterSheet> {
                   onTap: () => Navigator.pop(context),
                   child: const Icon(Icons.close, color: Colors.grey)),
             ]),
+
             const SizedBox(height: 4),
+
             Text('اختر الفلاتر المناسبة للعثور على أفضل الكوبونات',
                 style: AppTheme.tajawal(fontSize: 12, color: AppTheme.primary)),
+
             const SizedBox(height: 20),
 
-            // _buildDropdown('📂  الفئة:', _options.category, _categories,
-            //     (v) => setState(() => _options = _options.copyWith(category: v))),
-            // const SizedBox(height: 16),
-
+            /// 🏢 المتجر
             _buildDropdown(
-                '🏢  المتجر:',
-                _options.company,
-                _companies,
-                (v) =>
-                    setState(() => _options = _options.copyWith(company: v))),
+              '🏢  المتجر:',
+              _options.company,
+              _companies,
+              (v) => setState(() => _options = _options.copyWith(company: v)),
+            ),
+
             const SizedBox(height: 16),
 
+            /// 🌐 الدولة
             _buildDropdown(
-                '🌐  الدولة:',
-                _options.country,
-                _countries,
-                (v) =>
-                    setState(() => _options = _options.copyWith(country: v))),
+              '🌐  الدولة:',
+              _options.country,
+              _countries,
+              (v) => setState(() => _options = _options.copyWith(country: v)),
+            ),
+
             const SizedBox(height: 16),
 
+            /// 🏷 الفئة (NEW)
             _buildDropdown(
-                '⏰  المدة:',
-                _options.duration,
-                _durations,
-                (v) =>
-                    setState(() => _options = _options.copyWith(duration: v))),
+              '🏷  الفئة:',
+              _options.category,
+              _categories,
+              (v) => setState(() => _options = _options.copyWith(category: v)),
+            ),
+
             const SizedBox(height: 24),
 
             Row(children: [
@@ -212,6 +206,7 @@ class _FilterSheetState extends State<FilterSheet> {
                 ),
               )),
             ]),
+
             SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 12),
           ],
         ),
@@ -221,7 +216,7 @@ class _FilterSheetState extends State<FilterSheet> {
 
   Widget _buildDropdown(String label, String value, List<String> items,
       ValueChanged<String> onChanged) {
-    final safeValue = items.contains(value) ? value : items.first;
+    final safeValue = items.contains(value.trim()) ? value.trim() : items.first;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label,
           style: AppTheme.tajawal(fontSize: 13, fontWeight: FontWeight.bold)),
@@ -241,7 +236,10 @@ class _FilterSheetState extends State<FilterSheet> {
             icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
             style: AppTheme.tajawal(color: Colors.black, fontSize: 14),
             items: items
-                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .map((e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(e),
+                    ))
                 .toList(),
             onChanged: (v) {
               if (v != null) onChanged(v);

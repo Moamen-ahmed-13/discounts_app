@@ -21,7 +21,7 @@ class StoreItem extends StatelessWidget {
   Widget _buildLogo() {
     if (_isLocal && store.logoUrl.endsWith('.svg')) {
       return SvgPicture.asset(store.logoUrl,
-          fit: BoxFit.contain, placeholderBuilder: (_) => _fallback());
+          fit: BoxFit.cover, placeholderBuilder: (_) => _fallback());
     }
     if (_isLocal) {
       return Image.asset(store.logoUrl,
@@ -72,7 +72,7 @@ class StoreItem extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 85,
+          width: 100,
           height: 85,
           margin: const EdgeInsets.only(
             left: 10,
@@ -91,17 +91,22 @@ class StoreItem extends StatelessWidget {
           ),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Container(
-              width: 50,
-              height: 36,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
-                  color: Colors.white, borderRadius: BorderRadius.circular(6)),
+                shape: BoxShape.circle,
+                color: Colors.white,
+                // borderRadius: BorderRadius.circular(6)
+              ),
               padding: const EdgeInsets.all(4),
-              child: _buildLogo(),
+              child: ClipOval(child: _buildLogo()),
             ),
             const SizedBox(height: 6),
             Text(store.name,
-                style:
-                    AppTheme.tajawal(fontSize: 11, color: AppTheme.textPrimary),
+                style: AppTheme.tajawal(
+                    fontSize: 11,
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.bold),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center),

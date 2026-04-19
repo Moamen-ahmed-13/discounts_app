@@ -293,7 +293,7 @@ class AppLabels {
 
     return AppLabels(
       countries: parse(json['countries'] ?? json['country']),
-      durations: parse(json['durations'] ?? json['duration']),
+      durations: parse(json['category'] ?? json['duration']),
     );
   }
 }

@@ -1,5 +1,4 @@
 // lib/models/coupon.dart
-// استبدل الملف الحالي بالكامل
 
 class Coupon {
   final String id;
@@ -13,6 +12,7 @@ class Coupon {
   final String badge;
   final String storeUrl;
   final int discountPercent;
+  final String discountRaw;
   final String category;
   final String country;
 
@@ -30,27 +30,22 @@ class Coupon {
     required this.discountPercent,
     required this.category,
     this.country = '',
+    required this.discountRaw,
   });
 
   factory Coupon.fromJson(Map<String, dynamic> json) {
     final store = json['store'] as Map<String, dynamic>?;
 
-    // ✅ logo من store.logo_url
     final storeLogo = store?['logo_url']?.toString() ?? '';
-
-    // ✅ صورة الكوبون من card_image أو image_url
     final couponImage =
         json['card_image']?.toString() ?? json['image_url']?.toString() ?? '';
-
-    // ✅ رابط المتجر من store.url أو link
     final storeUrl =
         store?['url']?.toString() ?? json['link']?.toString() ?? '';
+final discountRaw = (json['discount'] ?? '').toString();
 
-    // ✅ نسبة الخصم من discount (string مثل "20%")
-    final discountRaw =
-        (json['discount'] ?? '0').toString().replaceAll('%', '').trim();
-    final discountPercent = int.tryParse(discountRaw) ?? 0;
-
+final discountPercent = int.tryParse(
+  discountRaw.replaceAll('%', '').trim(),
+) ?? 0;
     return Coupon(
       id: (json['id'] ?? '').toString(),
       storeId: (json['store_id'] ?? store?['id'] ?? '').toString(),
@@ -63,10 +58,12 @@ class Coupon {
       badge: json['badge']?.toString() ?? 'مميز',
       storeUrl: storeUrl,
       discountPercent: discountPercent,
-      category: store?['category']?.toString() ?? 'عام',
+      category:
+          store?['category_label']?.toString() ?? '', // ✅ كما هي من الـ API
       country: json['country_label']?.toString() ??
           store?['country']?.toString() ??
           '',
+      discountRaw: (json['discount'] ?? '0').toString(),
     );
   }
 }
@@ -85,12 +82,10 @@ class Store {
   });
 
   factory Store.fromJson(Map<String, dynamic> json) {
-    // ✅ offers بيستخدموا image_url — stores بيستخدموا logo_url
     final logo = json['image_url']?.toString() ??
         json['logo_url']?.toString() ??
         json['logo']?.toString() ??
         '';
-
     return Store(
       id: (json['id'] ?? '').toString(),
       name: json['name']?.toString() ?? json['title']?.toString() ?? '',
